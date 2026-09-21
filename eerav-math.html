@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Eerav's Math Fun!</title>
+<style>
+  :root{
+    --bg:#fff7ef;--card:#ffffff;--ink:#3a2f2a;--muted:#9a8b80;
+    --p1:#ff8fab;--p2:#ffd166;--p3:#8ecae6;--p4:#95d5b2;--p5:#cba0ff;
+    --good:#57c785;--good-soft:#e4f7ec;--bad:#ff9aa2;
+    --shadow:0 6px 18px rgba(120,90,60,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{font-family:"Comic Sans MS","Chalkboard SE",-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;user-select:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:16px 16px 40px;}
+  header.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  header.top h1{font-size:26px;margin:0;}
+  .stars{background:#fff;border-radius:30px;padding:8px 16px;box-shadow:var(--shadow);font-size:22px;font-weight:800;color:#f4a017;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .tile{border:none;border-radius:26px;padding:26px 14px;cursor:pointer;box-shadow:var(--shadow);color:#fff;font-size:22px;font-weight:800;font-family:inherit;transition:transform .1s;text-align:center;}
+  .tile:active{transform:scale(.95);}
+  .tile .emo{font-size:52px;display:block;margin-bottom:8px;}
+  .c1{background:#ff8fab;}.c2{background:#ffb703;}.c3{background:#8ecae6;}.c4{background:#95d5b2;}
+  .c5{background:#b298dc;}.c6{background:#ffa552;}.c7{background:#7ec4cf;}
+
+  .card{background:var(--card);border-radius:28px;padding:20px;box-shadow:var(--shadow);}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .backbtn{border:none;background:#fff0e0;border-radius:20px;padding:10px 18px;font-size:20px;cursor:pointer;font-family:inherit;font-weight:800;color:#a0754a;}
+  .speaker{border:none;background:#e8f4ff;border-radius:50%;width:60px;height:60px;font-size:30px;cursor:pointer;box-shadow:var(--shadow);}
+  .speaker:active{transform:scale(.9);}
+
+  .qtext{text-align:center;font-size:30px;font-weight:800;margin:6px 0 4px;}
+  .qbig{text-align:center;font-size:40px;font-weight:900;margin:6px 0;letter-spacing:2px;}
+  .visual{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:14px auto;max-width:520px;}
+  .obj{font-size:46px;line-height:1.1;}
+  .obj.gone{opacity:.25;position:relative;}
+  .obj.gone:after{content:"✖";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:40px;color:#e05555;}
+  .addrow{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin:16px 0;}
+  .addgroup{background:#fff7ef;border-radius:20px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:240px;}
+  .plus{font-size:44px;font-weight:900;color:#f4a017;}
+
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;}
+  .choice{border:4px solid #ffe3c2;background:#fff;border-radius:24px;padding:22px 10px;font-size:40px;font-weight:900;cursor:pointer;font-family:inherit;color:var(--ink);transition:transform .08s;min-height:96px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;}
+  .choice:active{transform:scale(.94);}
+  .choice.correct{background:var(--good-soft);border-color:var(--good);}
+  .choice.wrong{background:#ffecec;border-color:var(--bad);animation:shake .3s;}
+  .choice.grp{font-size:34px;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  .nextbtn{display:none;width:100%;margin-top:18px;border:none;border-radius:26px;background:#57c785;color:#fff;font-size:28px;font-weight:900;padding:18px;cursor:pointer;font-family:inherit;box-shadow:var(--shadow);}
+  .nextbtn:active{transform:scale(.97);}
+  .nextbtn.show{display:block;}
+
+  .celebrate{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;z-index:50;}
+  .celebrate.show{display:flex;}
+  .celebrate .msg{font-size:44px;font-weight:900;color:#f4a017;background:#fff;padding:16px 30px;border-radius:30px;box-shadow:var(--shadow);}
+  .confetti{position:fixed;top:-40px;font-size:34px;animation:fall 1.4s linear forwards;z-index:49;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:.2;}}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 id="greet">🎉 Eerav's Math!</h1>
+    <div class="stars">⭐ <span id="starN">0</span></div>
+  </header>
+
+  <!-- HOME -->
+  <div id="home">
+    <div class="grid" id="tiles"></div>
+  </div>
+
+  <!-- GAME -->
+  <div id="game" class="hidden">
+    <div class="card">
+      <div class="toolbar">
+        <button class="backbtn" onclick="goHome()">🏠</button>
+        <button class="speaker" onclick="replay()">🔊</button>
+      </div>
+      <div class="qtext" id="qText"></div>
+      <div class="qbig" id="qBig"></div>
+      <div id="qVisual"></div>
+      <div class="choices" id="qChoices"></div>
+      <button class="nextbtn" id="nextBtn" onclick="nextQ()">Next ➡️</button>
+    </div>
+  </div>
+</div>
+
+<div class="celebrate" id="celebrate"><div class="msg" id="celMsg">⭐ Yay! ⭐</div></div>
+
+<script>
+/* ============ helpers ============ */
+const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const S=x=>String(x);
+
+/* ============ read-aloud (works offline on iPad) ============ */
+let VOICE=null;
+function loadVoice(){try{const vs=speechSynthesis.getVoices();VOICE=vs.find(v=>/en[-_]US/i.test(v.lang)&&/(samantha|female|kid|child)/i.test(v.name))||vs.find(v=>/en/i.test(v.lang))||vs[0]||null;}catch(e){}}
+if('speechSynthesis' in window){loadVoice();speechSynthesis.onvoiceschanged=loadVoice;}
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.9;u.pitch=1.15;if(VOICE)u.voice=VOICE;speechSynthesis.speak(u);}catch(e){}}
+
+/* ============ progress ============ */
+const KEY='kidMathProgress_v1';
+let PROG=load();
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d)return d;}catch(e){}return{stars:0,levels:{}};}
+function save(){localStorage.setItem(KEY,JSON.stringify(PROG));}
+function refresh(){document.getElementById('starN').textContent=PROG.stars;}
+
+/* ============ object emojis ============ */
+const OBJS=['🍎','🐟','⭐','🎈','🐶','🍓','🚗','🌸','🐥','🍌','🐝','🦋'];
+const SHAPES=[['circle','⚫'],['square','🟥'],['triangle','🔺'],['star','⭐'],['heart','❤️'],['diamond','🔷']];
+
+function objRow(n,emo){let s='<div class="visual">';for(let i=0;i<n;i++)s+=`<span class="obj">${emo}</span>`;return s+'</div>';}
+
+/* ============ games ============ */
+const GAMES={
+  count(lv){
+    const n=lv===1?rand(1,5):lv===2?rand(4,10):rand(8,15);
+    const emo=pick(OBJS);
+    const choices=numChoices(n);
+    return{say:'How many? Count them!',text:'How many?',big:'',visual:objRow(n,emo),choices,answer:S(n),
+      good:`Yes! ${n}. Great counting!`};
+  },
+  numbers(lv){
+    if(lv===1){const t=rand(1,9);return{say:`Tap the number ${t}.`,text:`Find ${t}`,big:'',visual:'',choices:numChoices(t),answer:S(t),good:`Yes! That is ${t}!`};}
+    const start=lv===2?rand(1,6):rand(5,14);
+    return{say:'What comes next?',text:'What comes next?',big:`${start}  ${start+1}  ${start+2}  ❓`,visual:'',choices:numChoices(start+3),answer:S(start+3),good:`Yes! ${start+3} comes next!`};
+  },
+  add(lv){
+    let a,b;if(lv===1){a=rand(1,3);b=rand(1,2);}else if(lv===2){a=rand(1,5);b=rand(1,5);}else{a=rand(3,7);b=rand(2,6);}
+    const emo=pick(OBJS);
+    const vis=`<div class="addrow"><div class="addgroup">${(emo+' ').repeat(a)}</div><span class="plus">+</span><div class="addgroup">${(emo+' ').repeat(b)}</div></div>`;
+    return{say:`${a} plus ${b}. How many now?`,text:'Add them up!',big:`${a} + ${b}`,visual:vis,choices:numChoices(a+b),answer:S(a+b),good:`Yes! ${a} plus ${b} is ${a+b}!`};
+  },
+  subtract(lv){
+    let a=lv===1?rand(2,5):lv===2?rand(3,8):rand(5,10);let b=rand(1,a-1);
+    const emo=pick(OBJS);let vis='<div class="visual">';for(let i=0;i<a;i++)vis+=`<span class="obj ${i<b?'gone':''}">${emo}</span>`;vis+='</div>';
+    return{say:`${a} take away ${b}. How many are left?`,text:'How many left?',big:`${a} − ${b}`,visual:vis,choices:numChoices(a-b),answer:S(a-b),good:`Yes! ${a} take away ${b} is ${a-b}!`};
+  },
+  compare(lv){
+    let m=rand(1,7),n=rand(1,7);while(n===m)n=rand(1,7);
+    const emo=pick(OBJS);
+    const more=lv===2?false:true; // L1 more, L2/L3 less
+    const want=more?'more':'less';
+    const grpA={label:`<div class="addgroup grp">${(emo+' ').repeat(m)}</div>`,value:'A'};
+    const grpB={label:`<div class="addgroup grp">${(emo+' ').repeat(n)}</div>`,value:'B'};
+    const ansGrp = more ? (m>n?'A':'B') : (m<n?'A':'B');
+    return{say:`Which has ${want}?`,text:`Which has ${want.toUpperCase()}?`,big:'',visual:'',choices:shuffle([grpA,grpB]),answer:ansGrp,good:`Yes! That group has ${want}!`};
+  },
+  shapes(lv){
+    const target=pick(SHAPES);
+    const others=shuffle(SHAPES.filter(s=>s[0]!==target[0])).slice(0,3);
+    const choices=shuffle([target,...others]).map(s=>({label:`<span style="font-size:56px">${s[1]}</span>`,value:s[0]}));
+    return{say:`Tap the ${target[0]}.`,text:`Find the ${target[0]}`,big:'',visual:'',choices,answer:target[0],good:`Yes! That is a ${target[0]}!`};
+  },
+  patterns(lv){
+    const p=shuffle(OBJS).slice(0,3);
+    let seq,next;
+    if(lv===1){seq=[p[0],p[1],p[0],p[1]];next=p[0];}
+    else if(lv===2){seq=[p[0],p[1],p[2],p[0],p[1]];next=p[2];}
+    else{seq=[p[0],p[0],p[1],p[1],p[0],p[0]];next=p[1];}
+    const vis=`<div class="visual">${seq.map(x=>`<span class="obj">${x}</span>`).join('')}<span class="obj">❓</span></div>`;
+    const opts=shuffle(p.slice(0,3)).map(x=>({label:`<span style="font-size:52px">${x}</span>`,value:x}));
+    return{say:'What comes next?',text:'What comes next?',big:'',visual:vis,choices:opts,answer:next,good:'Yes! You found the pattern!'};
+  }
+};
+
+function numChoices(answer){
+  const set=new Set([answer]);let g=0;
+  while(set.size<4&&g<60){let d=answer+rand(-3,3);if(d<0)d=Math.abs(d);if(d!==answer)set.add(d);g++;}
+  let k=answer+1;while(set.size<4){set.add(k++);}
+  return shuffle([...set]).map(v=>({label:S(v),value:S(v)}));
+}
+
+const TILES=[
+  {id:'count',emo:'🔢',name:'Count',cls:'c1'},
+  {id:'numbers',emo:'🔟',name:'Numbers',cls:'c2'},
+  {id:'add',emo:'➕',name:'Add',cls:'c3'},
+  {id:'subtract',emo:'➖',name:'Take Away',cls:'c4'},
+  {id:'compare',emo:'⚖️',name:'More or Less',cls:'c5'},
+  {id:'shapes',emo:'⭐',name:'Shapes',cls:'c6'},
+  {id:'patterns',emo:'🎨',name:'Patterns',cls:'c7'}
+];
+
+/* ============ flow ============ */
+const NAME='Eerav';
+let current=null,level=1,correctRow=0,answer=null,curSay='',locked=false;
+
+function buildTiles(){const g=document.getElementById('tiles');g.innerHTML='';TILES.forEach(t=>{const b=document.createElement('button');b.className='tile '+t.cls;b.innerHTML=`<span class="emo">${t.emo}</span>${t.name}`;b.onclick=()=>openGame(t.id,t.name);g.appendChild(b);});}
+function goHome(){try{speechSynthesis.cancel();}catch(e){}document.getElementById('game').classList.add('hidden');document.getElementById('home').classList.remove('hidden');refresh();}
+function openGame(id,name){current=id;level=PROG.levels[id]||1;correctRow=0;document.getElementById('home').classList.add('hidden');document.getElementById('game').classList.remove('hidden');speak('Okay '+NAME+'! Let us play '+name+'!');setTimeout(nextQ,900);}
+
+function nextQ(){
+  locked=false;
+  document.getElementById('nextBtn').classList.remove('show');
+  const item=GAMES[current](level);
+  answer=item.answer;curSay=item.say;window._good=item.good;
+  document.getElementById('qText').textContent=item.text||'';
+  document.getElementById('qBig').textContent=item.big||'';
+  document.getElementById('qVisual').innerHTML=item.visual||'';
+  const box=document.getElementById('qChoices');box.innerHTML='';
+  item.choices.forEach(c=>{const b=document.createElement('button');b.className='choice'+(c.label.indexOf('addgroup')>-1?' grp':'');b.innerHTML=c.label;b.onclick=()=>answerQ(b,c.value);box.appendChild(b);});
+  speak(item.say);
+}
+function replay(){speak(curSay);}
+
+function answerQ(btn,val){
+  if(locked)return;
+  if(val===answer){
+    locked=true;
+    document.querySelectorAll('#qChoices .choice').forEach(b=>b.disabled=true);
+    btn.classList.add('correct');
+    PROG.stars++;correctRow++;
+    if(correctRow>=4&&level<3){level++;correctRow=0;}
+    PROG.levels[current]=level;save();refresh();
+    celebrate(window._good);
+    document.getElementById('nextBtn').classList.add('show');
+  }else{
+    btn.classList.add('wrong');btn.disabled=true;
+    correctRow=0;
+    speak('Try again!');
+  }
+}
+
+const CELS=['⭐ Yay! ⭐','🎉 Great! 🎉','👏 Nice! 👏','🌟 Wow! 🌟','😃 Yes! 😃'];
+const CHEERS=['Great job',NAME+', you did it','Awesome','Way to go '+NAME,'You are so smart','Yay'];
+function celebrate(sayMsg){
+  const c=document.getElementById('celebrate');document.getElementById('celMsg').textContent=pick(CELS);
+  c.classList.add('show');
+  for(let i=0;i<14;i++){const e=document.createElement('div');e.className='confetti';e.textContent=pick(['⭐','🎉','🌈','✨','🎈','💛']);e.style.left=rand(2,96)+'vw';e.style.animationDelay=(Math.random()*0.4)+'s';e.style.fontSize=rand(24,44)+'px';document.body.appendChild(e);setTimeout(()=>e.remove(),1800);}
+  speak((sayMsg||'Great job!')+' '+pick(CHEERS)+'!');
+  setTimeout(()=>c.classList.remove('show'),1200);
+}
+
+/* ============ init ============ */
+buildTiles();refresh();
+</script>
+</body>
+</html>
