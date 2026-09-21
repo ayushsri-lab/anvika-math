@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Anvika's Math Practice</title>
+<style>
+  :root{
+    --bg:#f4f6f8;--card:#ffffff;--ink:#33404d;--muted:#7a8794;
+    --accent:#5b8def;--accent-soft:#e8f0fe;--good:#57a773;--good-soft:#e6f4ec;
+    --bad:#d98686;--bad-soft:#fbeceb;--warn:#c9922e;--warn-soft:#fbf3e2;
+    --line:#e3e8ee;--shadow:0 2px 10px rgba(40,60,90,.06);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 60px;}
+  header.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  header.top h1{font-size:22px;margin:0;font-weight:700;}
+  .stats{display:flex;gap:10px;}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;text-align:center;box-shadow:var(--shadow);}
+  .stat .n{font-size:18px;font-weight:700;line-height:1;}
+  .stat .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;}
+  h2{font-size:18px;margin:0 0 12px;}
+  p.sub{color:var(--muted);margin:0 0 16px;font-size:14px;}
+
+  .topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+  .topic{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;transition:.15s;text-align:left;box-shadow:var(--shadow);}
+  .topic:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .topic .ic{font-size:26px;}
+  .topic .tn{font-weight:600;margin-top:6px;font-size:15px;}
+  .topic .lv{font-size:12px;color:var(--muted);margin-top:4px;}
+
+  .mode-row{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-size:15px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{filter:brightness(.96);}
+  .btn-ghost{background:var(--accent-soft);color:var(--accent);}
+  .btn-lite{background:#eef1f5;color:var(--ink);}
+  .btn-block{width:100%;}
+
+  .question{font-size:21px;font-weight:600;margin:6px 0 16px;}
+  .visual{margin:10px 0 18px;display:flex;justify-content:center;}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .choice{background:#fff;border:2px solid var(--line);border-radius:14px;padding:16px;font-size:18px;font-weight:600;cursor:pointer;transition:.12s;font-family:inherit;color:var(--ink);}
+  .choice:hover:not(:disabled){border-color:var(--accent);}
+  .choice.correct{background:var(--good-soft);border-color:var(--good);color:var(--good);}
+  .choice.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad);opacity:.7;}
+  .choice:disabled{cursor:default;}
+
+  .hintbox{margin-top:16px;border-radius:14px;padding:14px 16px;background:var(--warn-soft);border:1px solid #ecd8a8;display:none;}
+  .hintbox.show{display:block;}
+  .hintbox .htitle{font-weight:700;color:var(--warn);margin-bottom:8px;}
+  .hintbox .hitem{font-size:15px;margin:6px 0;padding-left:22px;position:relative;}
+  .hintbox .hitem:before{content:"💡";position:absolute;left:0;}
+  .retry{font-weight:600;color:var(--bad);margin-top:6px;}
+
+  .feedback{margin-top:16px;border-radius:14px;padding:16px;display:none;background:var(--good-soft);border:1px solid var(--good);}
+  .feedback.show{display:block;}
+  .feedback .ftitle{font-weight:700;margin-bottom:6px;color:var(--good);}
+  .feedback .explain{font-size:15px;color:var(--ink);}
+  .feedback.neutral{background:#eef1f5;border-color:#d5dbe2;}
+  .feedback.neutral .ftitle{color:var(--muted);}
+
+  .progress-badge{background:#eef1f5;color:var(--ink);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;}
+  .band{display:inline-block;padding:8px 22px;border-radius:26px;font-weight:700;font-size:22px;margin:8px 0;}
+  .band.dnm{background:var(--bad-soft);color:var(--bad);}
+  .band.app{background:var(--warn-soft);color:var(--warn);}
+  .band.meet{background:var(--accent-soft);color:var(--accent);}
+  .band.exc{background:var(--good-soft);color:var(--good);}
+  .scaleline{position:relative;height:10px;border-radius:6px;margin:22px 0 6px;background:linear-gradient(90deg,#f6dede 0%,#f6dede 24%,#fbf0d8 24%,#fbf0d8 40%,#dfeaff 40%,#dfeaff 76%,#dcefe2 76%,#dcefe2 100%);}
+  .scaleline .marker{position:absolute;top:-6px;width:4px;height:22px;background:var(--ink);border-radius:2px;transform:translateX(-50%);}
+  .scalelabels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;}
+  .toolbar .right{display:flex;gap:8px;align-items:center;}
+  .lvbadge{background:var(--accent-soft);color:var(--accent);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;}
+  .link{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;font-family:inherit;text-decoration:underline;}
+  .pill{background:var(--warn-soft);color:var(--warn);border:1px solid #ecd8a8;border-radius:20px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+
+  .lesson-body{font-size:15.5px;}
+  .lesson-body h3{font-size:16px;margin:16px 0 6px;color:var(--accent);}
+  .lesson-body .ex{background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin:10px 0;}
+  .lesson-body .strat{background:var(--good-soft);border-radius:12px;padding:12px 14px;margin:10px 0;border-left:4px solid var(--good);}
+  .lesson-body ul{margin:6px 0;padding-left:22px;}
+
+  .timer{font-size:32px;font-weight:800;text-align:center;color:var(--accent);}
+  .big-result{text-align:center;padding:20px 0;}
+  .big-result .num{font-size:48px;font-weight:800;color:var(--accent);}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;}
+  .toast.show{opacity:1;}
+  .hidden{display:none;}
+  .pgraph-row{display:flex;align-items:center;gap:4px;margin:3px 0;font-size:22px;}
+  .pgraph-row .lbl{width:80px;font-size:14px;font-weight:600;text-align:right;color:var(--ink);}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>🌟 Anvika's Math</h1>
+    <div class="stats">
+      <div class="stat"><div class="n" id="statStars">0</div><div class="l">Stars</div></div>
+      <div class="stat"><div class="n" id="statStreak">0</div><div class="l">Streak</div></div>
+      <div class="stat"><div class="n" id="statBest">0</div><div class="l">Best</div></div>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <div id="home">
+    <div class="card">
+      <h2>Pick something to learn</h2>
+      <p class="sub">Each topic starts with a short lesson, then you practice. Getting stuck is good — you'll get hints, not answers!</p>
+      <div class="topic-grid" id="topicGrid"></div>
+    </div>
+  </div>
+
+  <!-- MODE PICK -->
+  <div id="modePick" class="hidden">
+    <div class="card">
+      <button class="link" onclick="goHome()">&larr; Back</button>
+      <h2 id="modeTitle" style="margin-top:10px"></h2>
+      <p class="sub" id="modeSub"></p>
+      <div class="mode-row">
+        <button class="btn btn-primary" onclick="openLesson()">📖 Lesson + Practice</button>
+        <button class="btn btn-ghost" onclick="startQuick()">⚡ Quick Math (60s)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LESSON -->
+  <div id="lesson" class="hidden">
+    <div class="card">
+      <button class="link" onclick="show('modePick')">&larr; Back</button>
+      <h2 id="lessonTitle" style="margin-top:10px"></h2>
+      <div class="lesson-body" id="lessonBody"></div>
+      <button class="btn btn-primary btn-block" style="margin-top:16px" onclick="beginQuestions()">I'm ready — start practicing →</button>
+    </div>
+  </div>
+
+  <!-- PRACTICE -->
+  <div id="practice" class="hidden">
+    <div class="card">
+      <div class="toolbar">
+        <button class="link" onclick="goHome()">&larr; Home</button>
+        <div class="right">
+          <span class="link" onclick="openLesson()">📖 Lesson</span>
+          <span class="progress-badge" id="pProgress">1 / 10</span>
+          <span class="lvbadge" id="pracLevel">Level 1</span>
+        </div>
+      </div>
+      <div class="question" id="pQ"></div>
+      <div class="visual" id="pVisual"></div>
+      <div class="choices" id="pChoices"></div>
+      <div class="hintbox" id="pHint"><div class="htitle" id="pHintTitle">A little help 🤔</div><div id="pHintItems"></div><div class="retry" id="pRetry"></div></div>
+      <div class="feedback" id="pFeedback">
+        <div class="ftitle" id="pFTitle"></div>
+        <div class="explain" id="pExplain"></div>
+        <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="nextPractice()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT (BOY-style report card) -->
+  <div id="result" class="hidden">
+    <div class="card">
+      <h2 id="rTopicName" style="text-align:center"></h2>
+      <div style="text-align:center">
+        <div class="band" id="rBand">Meets</div>
+        <div style="font-size:38px;font-weight:800;color:var(--ink)" id="rScale">1500</div>
+        <div style="color:var(--muted);font-size:13px">On-level target: 1493–1585</div>
+      </div>
+      <div class="scaleline"><div class="marker" id="rMarker" style="left:50%"></div></div>
+      <div class="scalelabels"><span>Does not meet</span><span>Approaching</span><span>Meets</span><span>Exceeds</span></div>
+      <div style="text-align:center;margin-top:16px;font-size:15px" id="rDetail"></div>
+      <div style="text-align:center;margin-top:6px;color:var(--muted);font-size:14px" id="rMsg"></div>
+      <div class="mode-row" style="justify-content:center;margin-top:18px">
+        <button class="btn btn-primary" onclick="startPractice()">Practice again</button>
+        <button class="btn btn-lite" onclick="goHome()">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK MATH -->
+  <div id="quick" class="hidden">
+    <div class="card" id="quickPlay">
+      <div class="toolbar">
+        <button class="link" onclick="quitQuick()">&larr; Home</button>
+        <span class="lvbadge" id="qScore">Score: 0</span>
+      </div>
+      <div class="timer" id="qTimer">60</div>
+      <div class="question" id="qQ" style="text-align:center"></div>
+      <div class="visual" id="qVisual"></div>
+      <div class="choices" id="qChoices"></div>
+    </div>
+    <div class="card hidden" id="quickDone">
+      <div class="big-result">
+        <div class="num" id="qFinal">0</div>
+        <div style="font-size:16px;color:var(--muted)">correct answers!</div>
+        <div id="qRecord" style="margin-top:10px;font-weight:600;color:var(--good)"></div>
+      </div>
+      <div class="mode-row" style="justify-content:center">
+        <button class="btn btn-primary" onclick="startQuick()">Try again</button>
+        <button class="btn btn-lite" onclick="goHome()">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>Made with ❤️ for Anvika · A little practice every day 🌱</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== Utilities ===================== */
+const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const S=x=>String(x);
+const ord=n=>({1:'1st',2:'2nd',3:'3rd',4:'4th',5:'5th',6:'6th',7:'7th',8:'8th'}[n]||n+'th');
+const fmt=(h,m)=>`${h}:${String(m).padStart(2,'0')}`;
+function makeNumChoices(answer,spread){
+  const set=new Set([answer]);let g=0;
+  while(set.size<4&&g<80){let d=answer+(rand(0,spread*2)-spread);if(d<0)d=Math.abs(d)+1;if(d!==answer)set.add(d);g++;}
+  let n=answer+1;while(set.size<4){if(n!==answer)set.add(n);n++;}
+  return shuffle([...set].map(S));
+}
+function makeChoicesFrom(answer,pool){
+  const set=new Set([answer]);for(const x of shuffle(pool)){if(set.size>=4)break;set.add(x);}
+  return shuffle([...set].map(S));
+}
+
+/* ===================== Visuals (SVG) ===================== */
+function fractionBar(s,n){const w=320,h=60;let p='';for(let i=0;i<n;i++){const x=i*(w/n);p+=`<rect x="${x}" y="0" width="${w/n}" height="${h}" fill="${i<s?'#5b8def':'#eef1f5'}" stroke="#fff" stroke-width="3"/>`;}return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${p}</svg>`;}
+function numberLineFrac(k,n){const w=340,pad=25,y=45,inner=w-2*pad;let t='';for(let i=0;i<=n;i++){const x=pad+inner*(i/n);t+=`<line x1="${x}" y1="${y-8}" x2="${x}" y2="${y+8}" stroke="#7a8794" stroke-width="2"/>`;}const px=pad+inner*(k/n);return `<svg width="${w}" height="80" viewBox="0 0 ${w} 80"><line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#7a8794" stroke-width="2"/>${t}<text x="${pad}" y="${y+28}" text-anchor="middle" font-size="15" fill="#33404d">0</text><text x="${w-pad}" y="${y+28}" text-anchor="middle" font-size="15" fill="#33404d">1</text><circle cx="${px}" cy="${y}" r="8" fill="#d98686"/><text x="${px}" y="${y-16}" text-anchor="middle" font-size="15" fill="#d98686" font-weight="700">?</text></svg>`;}
+function clockSVG(h,m){const cx=100,cy=100,r=88;const hand=(v,t,l,c,w)=>{const rad=(v/t*360-90)*Math.PI/180;return `<line x1="${cx}" y1="${cy}" x2="${cx+l*Math.cos(rad)}" y2="${cy+l*Math.sin(rad)}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;};let nums='';for(let i=1;i<=12;i++){const rad=(i/12*360-90)*Math.PI/180;nums+=`<text x="${cx+70*Math.cos(rad)}" y="${cy+70*Math.sin(rad)+6}" text-anchor="middle" font-size="16" fill="#33404d" font-weight="600">${i}</text>`;}return `<svg width="200" height="200" viewBox="0 0 200 200"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#5b8def" stroke-width="4"/>${nums}${hand((h%12)+m/60,12,45,'#33404d',6)}${hand(m,60,68,'#5b8def',4)}<circle cx="${cx}" cy="${cy}" r="5" fill="#33404d"/></svg>`;}
+function rulerSVG(len){const ppi=42,pad=20,inches=8,w=pad*2+ppi*inches;let t='';for(let i=0;i<=inches;i++){const x=pad+i*ppi;t+=`<line x1="${x}" y1="30" x2="${x}" y2="55" stroke="#33404d" stroke-width="2"/><text x="${x}" y="72" text-anchor="middle" font-size="13" fill="#33404d">${i}</text>`;}return `<svg width="${w}" height="82" viewBox="0 0 ${w} 82"><rect x="${pad}" y="30" width="${ppi*inches}" height="25" fill="#eef1f5" stroke="#c9d3de"/><rect x="${pad}" y="5" width="${len*ppi}" height="18" rx="4" fill="#57a773"/>${t}</svg>`;}
+function areaGrid(w,h){const cell=32,pad=2;let sq='';for(let r=0;r<h;r++)for(let c=0;c<w;c++){sq+=`<rect x="${pad+c*cell}" y="${pad+r*cell}" width="${cell}" height="${cell}" fill="#e8f0fe" stroke="#5b8def" stroke-width="1.5"/>`;}return `<svg width="${w*cell+pad*2}" height="${h*cell+pad*2}" viewBox="0 0 ${w*cell+pad*2} ${h*cell+pad*2}">${sq}</svg>`;}
+const SHAPES={square:`<rect x="20" y="20" width="90" height="90" fill="#e8f0fe" stroke="#5b8def" stroke-width="4"/>`,rectangle:`<rect x="15" y="35" width="130" height="70" fill="#e8f0fe" stroke="#5b8def" stroke-width="4"/>`,triangle:`<polygon points="80,15 20,120 140,120" fill="#e8f0fe" stroke="#5b8def" stroke-width="4"/>`,rhombus:`<polygon points="80,15 145,70 80,125 15,70" fill="#e8f0fe" stroke="#5b8def" stroke-width="4"/>`,pentagon:`<polygon points="80,15 140,60 118,130 42,130 20,60" fill="#e8f0fe" stroke="#5b8def" stroke-width="4"/>`,hexagon:`<polygon points="50,20 110,20 140,70 110,120 50,120 20,70" fill="#e8f0fe" stroke="#5b8def" stroke-width="4"/>`};
+function shapeSVG(name){return `<svg width="160" height="140" viewBox="0 0 160 140">${SHAPES[name]||SHAPES.square}</svg>`;}
+function barGraphSVG(cats,vals,scale){const bw=48,gap=28,pad=40,maxV=Math.max(...vals),h=170,top=Math.ceil(maxV/scale)*scale,w=pad*2+cats.length*(bw+gap),unit=(h-30)/top;let bars='',axis='';for(let g=0;g<=top;g+=scale){const y=h-20-g*unit;axis+=`<line x1="${pad}" y1="${y}" x2="${w-10}" y2="${y}" stroke="#e3e8ee"/><text x="${pad-8}" y="${y+4}" text-anchor="end" font-size="12" fill="#7a8794">${g}</text>`;}cats.forEach((c,i)=>{const x=pad+i*(bw+gap)+gap/2,bh=vals[i]*unit;bars+=`<rect x="${x}" y="${h-20-bh}" width="${bw}" height="${bh}" rx="4" fill="#5b8def"/><text x="${x+bw/2}" y="${h-4}" text-anchor="middle" font-size="13" fill="#33404d" font-weight="600">${c}</text>`;});return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${axis}<line x1="${pad}" y1="${h-20}" x2="${w-10}" y2="${h-20}" stroke="#7a8794" stroke-width="2"/>${bars}</svg>`;}
+function groupsViz(groups,per,emoji){let s='<div style="text-align:center">';for(let i=0;i<groups;i++){s+=`<span style="display:inline-block;border:2px dashed #5b8def;border-radius:10px;padding:4px 6px;margin:3px;font-size:18px">${emoji.repeat(per)}</span>`;}return s+'</div>';}
+
+/* ===================== Lessons (RSM-style intros) ===================== */
+const LESSONS={
+  counting:{title:'🔢 Skip Counting & Patterns',html:`
+    <p>Skip counting means jumping by the <b>same amount</b> every time. It's the secret engine behind multiplication!</p>
+    <div class="strat"><b>Strategy — Find the Rule:</b> Look at two numbers next to each other and ask, <i>"How big is the jump?"</i> That jump is your rule. Then keep adding it to go forward, or subtract it to go backward.</div>
+    <div class="ex"><b>Example:</b> 4, 8, 12, __ . The jump is 4 (8−4=4). So next is 12 + 4 = <b>16</b>.<br>Working backward: if the 3rd number is 12, the start was 12 − 4 − 4 = <b>4</b>.</div>
+    <p>Try to <b>see the pattern first</b> before you calculate — that's how mathematicians think!</p>`},
+  algebra:{title:'✖️ Multiply & Divide',html:`
+    <p>Multiplication is <b>equal groups</b>. 3 × 4 means "3 groups of 4." You can picture it as an array (rows and columns).</p>
+    <div class="strat"><b>Strategy — Break It Apart:</b> A hard fact becomes two easy ones. For 7 × 6, think 7 × 5 = 35, plus one more group of 7 → 35 + 7 = <b>42</b>.</div>
+    <p>Division is multiplication <b>in reverse</b>. 24 ÷ 6 asks: <i>"6 times what equals 24?"</i></p>
+    <div class="ex"><b>Fact family:</b> 6 × 4 = 24, 4 × 6 = 24, 24 ÷ 6 = 4, 24 ÷ 4 = 6. Knowing one helps you know them all!</div>`},
+  numberops:{title:'➕ Add & Subtract (Smart Ways)',html:`
+    <p>Good mathematicians don't always line numbers up — they use <b>smart mental tricks</b>.</p>
+    <div class="strat"><b>Make a friendly number:</b> 59 + 26 → push 59 up to 60 (that's +1), do 60 + 26 = 86, then give back the 1 → <b>85</b>.</div>
+    <div class="strat"><b>Break by place value:</b> 47 + 36 = (40+30) + (7+6) = 70 + 13 = <b>83</b>.</div>
+    <div class="ex"><b>Two-step problems:</b> Read carefully and do <b>one step at a time</b>. Always ask "does my answer make sense?"</div>`},
+  fractions:{title:'🍕 Fractions',html:`
+    <p>A fraction shows <b>equal parts of a whole</b>. In 3/4: the bottom (4) tells how many equal parts in all; the top (3) tells how many we take.</p>
+    <div class="strat"><b>Fraction of a number:</b> To find 1/4 of 12, split 12 into 4 equal groups (12 ÷ 4 = 3). Each group is the answer. For 3/4, take 3 of those groups.</div>
+    <div class="strat"><b>Comparing:</b> You can only compare pieces that are the <b>same size</b>. Make the bottoms match, then compare the tops.</div>
+    <div class="ex"><b>Remember:</b> the more pieces you cut a pizza into, the <b>smaller</b> each piece — so 1/8 is smaller than 1/4!</div>`},
+  measurement:{title:'📏 Measurement & Time',html:`
+    <p><b>Length:</b> Always start measuring from <b>0</b> on the ruler, not the edge. Read the number where the object ends.</p>
+    <div class="strat"><b>Reading a clock:</b> The <b>short hand</b> is the hour. The <b>long hand</b> is the minutes — count by 5s around the clock (12→0, 1→5, 2→10 …).</div>
+    <div class="strat"><b>Elapsed time:</b> To find how much time passed, <b>count forward</b> from the start time to the end time.</div>
+    <div class="ex"><b>Example:</b> Recess starts at 10:20 and lasts 30 min. 20 + 30 = 50, so it ends at <b>10:50</b>.</div>`},
+  geometry:{title:'🔷 Shapes & Area',html:`
+    <p>We name shapes by their <b>sides and corners</b>. A shape with 4 straight sides is a <b>quadrilateral</b> (squares, rectangles, and rhombuses all belong to this family).</p>
+    <div class="strat"><b>Area</b> = how many unit squares cover the inside. Instead of counting one by one, multiply <b>rows × columns</b>.</div>
+    <div class="strat"><b>Perimeter</b> = the distance all the way <b>around</b> the outside. Add up every side.</div>
+    <div class="ex"><b>Cool fact:</b> two shapes can have the same area but different perimeters!</div>`},
+  data:{title:'📊 Graphs & Data',html:`
+    <p>Graphs turn numbers into pictures so we can compare them quickly.</p>
+    <div class="strat"><b>Read the scale first!</b> In a scaled graph, each line might count by 2, 5, or 10 — not always by 1. Check before you read a bar.</div>
+    <div class="strat"><b>"How many more?"</b> means <b>subtract</b>: read both bars, then take the smaller from the larger.</div>
+    <div class="ex"><b>Example:</b> If a bar reaches the "10" line and each step is 5, that bar equals 10 — count 5, 10.</div>`}
+};
+
+/* ---- RSM quick-method helpers (fast mental-math ways) ---- */
+function multMethod(a,b){
+  if(b>5)return `Break ${b} into 5 + ${b-5}: (${a}×5) + (${a}×${b-5}) = ${a*5} + ${a*(b-5)} = <b>${a*b}</b>.`;
+  if(a>5)return `Break ${a} into 5 + ${a-5}: (5×${b}) + (${a-5}×${b}) = ${5*b} + ${(a-5)*b} = <b>${a*b}</b>.`;
+  const seq=Array.from({length:a},(_,i)=>b*(i+1)).join(', ');
+  return `Skip-count by ${b}, ${a} times: ${seq} → <b>${a*b}</b>.`;
+}
+function addMethod(a,b){
+  const bUp=Math.ceil(b/10)*10,diff=bUp-b,at=Math.floor(a/10)*10,bt=Math.floor(b/10)*10,ao=a%10,bo=b%10;
+  const pv=`Or split by place value: (${at}+${bt}) + (${ao}+${bo}) = ${at+bt} + ${ao+bo} = <b>${a+b}</b>.`;
+  if(diff>0&&diff<10)return `Round ${b} up to ${bUp} (that's +${diff}): ${a} + ${bUp} = ${a+bUp}, then give back ${diff} → ${a+bUp} − ${diff} = <b>${a+b}</b>. ${pv}`;
+  return pv;
+}
+function subMethodUp(a,b){
+  let nh=Math.ceil((b+1)/100)*100;if(nh>a)nh=Math.ceil((b+1)/10)*10;if(nh>a)nh=a;
+  const j1=nh-b,j2=a-nh;
+  if(j2>0)return `Count UP from ${b}: +${j1} gets to ${nh}, then +${j2} gets to ${a}. Add the jumps: ${j1} + ${j2} = <b>${a-b}</b>.`;
+  return `Count UP from ${b} to ${a} in one jump: <b>${a-b}</b>.`;
+}
+
+/* ===================== Question Generators =====================
+   Each returns {q, visual, choices[], answer, hints:[nudges], explain, method:RSM fast way} */
+const GEN={
+  counting(lv){
+    if(lv===1){const step=pick([2,3,4,5,6,10]),b=rand(1,6)*step;
+      return{q:`Find the rule, then fill the blank:  ${b}, ${b+step}, ${b+2*step}, ___`,visual:'',
+        choices:makeNumChoices(b+3*step,step*2),answer:S(b+3*step),
+        hints:[`How big is each jump? Compare two numbers next to each other.`,`The jump is ${step}. Add ${step} to the last number you see.`],
+        explain:`The rule is <b>+${step}</b> each time. ${b+2*step} + ${step} = <b>${b+3*step}</b>.`,
+        method:`Spot the jump (+${step}), then just add it to the last number you see: ${b+2*step} + ${step} = <b>${b+3*step}</b>. No need to start counting from the beginning!`};}
+    if(lv===2){const step=pick([3,4,5,6]),start=rand(1,5),n=rand(4,6),term=start+(n-1)*step;
+      return{q:`Counting by ${step}s starting at ${start}, what is the ${ord(n)} number?`,visual:'',
+        choices:makeNumChoices(term,step*2),answer:S(term),
+        hints:[`Write the list and keep adding ${step}: ${start}, ${start+step}, ${start+2*step}, …`,`There are ${n-1} jumps of ${step} after the start. ${start} + ${n-1}×${step} works too.`],
+        explain:`Start ${start}, then ${n-1} jumps of ${step}: ${start} + ${n-1}×${step} = <b>${term}</b>.`,
+        method:`Instead of counting one-by-one, use start + jumps: ${start} + ${n-1}×${step} = ${start} + ${(n-1)*step} = <b>${term}</b>.`};}
+    if(rand(0,1)){const step=pick([3,4,5,6]),start=rand(1,6),n=rand(4,6),term=start+(n-1)*step;
+      return{q:`Counting by ${step}s, the ${ord(n)} number is ${term}. What number did we START on?`,visual:'',
+        choices:makeNumChoices(start,step*2),answer:S(start),
+        hints:[`Work backwards! Undo the jumps by subtracting ${step}.`,`There are ${n-1} jumps to undo: start from ${term} and subtract ${step} a total of ${n-1} times.`],
+        explain:`Undo ${n-1} jumps: ${term} − ${n-1}×${step} = <b>${start}</b>.`,
+        method:`Work backwards in one shot: ${term} − ${(n-1)*step} = <b>${start}</b> (that's ${n-1} jumps of ${step} taken away).`};}
+    const base=pick([3,4,5,6]),ms=shuffle([1,2,3,4,5,6]).slice(0,3).map(x=>x*base),odd=pick(ms.map(x=>x))+1;
+    const list=shuffle([...ms,odd]);
+    return{q:`Which number does NOT belong with the others?`,visual:`<div style="font-size:26px;font-weight:700;letter-spacing:8px">${list.join('  ')}</div>`,
+      choices:list.map(S),answer:S(odd),
+      hints:[`Most of these follow a skip-counting rule. What are they counting by?`,`Three of them are in the count-by-${base} list. Find the one that is not a multiple of ${base}.`],
+      explain:`Three numbers are multiples of ${base}. <b>${odd}</b> is not, so it doesn't belong.`,
+      method:`Quickly count by ${base} in your head — the number that isn't on that list (<b>${odd}</b>) pops right out.`};
+  },
+  algebra(lv){
+    if(lv===1){const a=rand(3,9),b=rand(3,9);
+      return{q:`${a} × ${b} = ?`,visual:areaGrid(a,b),
+        choices:makeNumChoices(a*b,8),answer:S(a*b),
+        hints:[`Picture ${a} rows with ${b} in each row. Skip-count by ${b}.`,`Break it apart: ${a} × ${b} = ${a} × ${b-1} + ${a}. Build from a fact you know.`],
+        explain:`${a} groups of ${b} = <b>${a*b}</b>. (${a}×${b}=${a*b})`,
+        method:multMethod(a,b)};}
+    if(lv===2){const a=rand(3,9),b=rand(3,9),d=a*b;
+      return{q:`${d} ÷ ${a} = ?`,visual:'',
+        choices:makeNumChoices(b,6),answer:S(b),
+        hints:[`Flip it into multiplication: ${a} × ? = ${d}.`,`Skip-count by ${a} and count the jumps until you reach ${d}.`],
+        explain:`${d} ÷ ${a} asks "${a} times what is ${d}?" Since ${a}×${b}=${d}, the answer is <b>${b}</b>.`,
+        method:`Use the times table backwards: ${a} × ${b} = ${d}, so ${d} ÷ ${a} = <b>${b}</b>. (Or skip-count by ${a} and count the jumps to ${d}.)`};}
+    const v=rand(0,1);
+    if(v===0){const groups=rand(3,6),per=rand(6,12),total=groups*per;
+      return{q:`${total} books are shared equally onto ${groups} shelves. How many books on each shelf?`,visual:groupsViz(groups,0,'📚')?'':'',
+        choices:makeNumChoices(per,5),answer:S(per),
+        hints:[`"Shared equally" is a division clue. Split ${total} into ${groups} equal groups.`,`Think ${groups} × ? = ${total}. Skip-count by ${groups}.`],
+        explain:`Sharing equally means divide: ${total} ÷ ${groups} = <b>${per}</b> books per shelf.`,
+        method:`Turn it around: ${groups} × ? = ${total}. Since ${groups} × ${per} = ${total}, each shelf holds <b>${per}</b>.`};}
+    const boxes=rand(3,6),each=rand(6,12);
+    return{q:`There are ${boxes} boxes with ${each} crayons in each box. How many crayons in all?`,visual:'',
+      choices:makeNumChoices(boxes*each,8),answer:S(boxes*each),
+      hints:[`Equal groups → multiply. That's ${boxes} groups of ${each}.`,`Skip-count by ${each}, ${boxes} times.`],
+      explain:`${boxes} groups of ${each} = ${boxes} × ${each} = <b>${boxes*each}</b> crayons.`,
+      method:multMethod(boxes,each)};
+  },
+  numberops(lv){
+    if(lv===1){const a=rand(26,79),b=rand(15,48);
+      return{q:`${a} + ${b} = ?`,visual:'',
+        choices:makeNumChoices(a+b,10),answer:S(a+b),
+        hints:[`Make a friendly number: round ${a} up to the next ten, then adjust back at the end.`,`Or add by place value: (tens + tens), then (ones + ones), then combine.`],
+        explain:`${a} + ${b} = <b>${a+b}</b>. Adding the tens and ones separately is a great check.`,
+        method:addMethod(a,b)};}
+    if(lv===2){if(rand(0,1)){let a=rand(120,850),b=rand(30,99);while(a+b>=1000)a=rand(120,850);
+        return{q:`${a} + ${b} = ?`,visual:'',choices:makeNumChoices(a+b,20),answer:S(a+b),
+          hints:[`Add the tens first, then the ones. Watch for a carry.`,`Break ${b} apart by place value and add each piece to ${a}.`],
+          explain:`${a} + ${b} = <b>${a+b}</b>. Carry a ten when the ones reach 10 or more.`,
+          method:addMethod(a,b)};}
+      const a=rand(300,900),b=rand(120,a-60);
+      return{q:`${a} − ${b} = ?`,visual:'',choices:makeNumChoices(a-b,25),answer:S(a-b),
+        hints:[`You can count UP from ${b} to ${a} instead of subtracting.`,`Or subtract place by place, borrowing when a digit is too small.`],
+        explain:`${a} − ${b} = <b>${a-b}</b>. Counting up from ${b} is a nice way to check.`,
+        method:subMethodUp(a,b)};}
+    if(rand(0,1)){const total=rand(250,400),m=rand(60,150),af=rand(40,Math.min(120,total-m-20));
+      return{q:`A store had ${total} apples. They sold ${m} in the morning and ${af} in the afternoon. How many are LEFT?`,visual:'',
+        choices:makeNumChoices(total-m-af,25),answer:S(total-m-af),
+        hints:[`Two steps. First figure out how many are left after the MORNING sale.`,`Then take away the afternoon amount too: ${total} − ${m} − ${af}.`],
+        explain:`Step 1: ${total} − ${m} = ${total-m}. Step 2: ${total-m} − ${af} = <b>${total-m-af}</b> left.`,
+        method:`Do it in two friendly steps: ${total} − ${m} = ${total-m}, then ${total-m} − ${af} = <b>${total-m-af}</b>. One step at a time!`};}
+    const start=rand(20,60),earn=rand(15,40),spend=rand(10,start+ -5>0?start-5:10);
+    const ans=start+earn-spend;
+    return{q:`Maya had $${start}. She earned $${earn} more, then spent $${spend}. How much does she have now?`,visual:'',
+      choices:makeNumChoices(ans,15),answer:S(ans),
+      hints:[`Two steps. First ADD what she earned to what she had.`,`Then SUBTRACT what she spent: $${start} + $${earn} − $${spend}.`],
+      explain:`Step 1: ${start} + ${earn} = ${start+earn}. Step 2: ${start+earn} − ${spend} = <b>$${ans}</b>.`,
+      method:`Add first, then subtract: ${start} + ${earn} = ${start+earn}, then ${start+earn} − ${spend} = <b>$${ans}</b>.`};
+  },
+  fractions(lv){
+    if(lv===1){const n=pick([2,3,4,6,8]),s=rand(1,n-1),pool=['1/2','1/3','2/3','1/4','3/4','1/6','5/6','1/8','3/8','2/4','2/6'];
+      return{q:`What fraction of the bar is blue?`,visual:fractionBar(s,n),
+        choices:makeChoicesFrom(`${s}/${n}`,pool),answer:`${s}/${n}`,
+        hints:[`Count ALL the equal parts first — that's the bottom number.`,`Now count only the blue parts — that's the top number.`],
+        explain:`${n} equal parts in all, ${s} are blue → <b>${s}/${n}</b>.`,
+        method:`At a glance: bottom = total parts (${n}), top = blue parts (${s}) → <b>${s}/${n}</b>.`};}
+    if(lv===2){const n=pick([2,3,4,5]),g=rand(2,6),whole=n*g,k=rand(1,n-1);
+      return{q:`What is ${k}/${n} of ${whole}?`,visual:groupsViz(n,g,'🔵'),
+        choices:makeNumChoices(g*k,5),answer:S(g*k),
+        hints:[`First split ${whole} into ${n} equal groups (divide by ${n}). How big is one group?`,`One group is ${whole/n}. Now take ${k} of those groups.`],
+        explain:`1/${n} of ${whole} is ${whole} ÷ ${n} = ${g}. So ${k}/${n} is ${k} × ${g} = <b>${g*k}</b>.`,
+        method:`Two quick steps: ${whole} ÷ ${n} = ${g} (one part), then × ${k} = <b>${g*k}</b>.`};}
+    const v=rand(0,2);
+    if(v===0){const pairs=[['2','3','3','4'],['1','2','2','3'],['2','5','1','2'],['3','4','5','8'],['1','3','2','5'],['1','2','3','5']];
+      const p=pick(pairs),A=p[0]+'/'+p[1],B=p[2]+'/'+p[3],va=p[0]/p[1],vb=p[2]/p[3],big=va>vb?A:B;
+      return{q:`Which fraction is LARGER?`,visual:'',choices:shuffle([A,B]),answer:big,
+        hints:[`You can't compare different-size pieces. Make the bottoms the same first.`,`Change both to the same denominator, then compare the top numbers.`],
+        explain:`Give them the same-size pieces, then compare tops. <b>${big}</b> is larger.`,
+        method:`Make same-size pieces (${p[1]*p[3]}ths): ${A} = ${p[0]*p[3]}/${p[1]*p[3]}, ${B} = ${p[2]*p[1]}/${p[1]*p[3]}. More pieces wins → <b>${big}</b>.`};}
+    if(v===1){const slices=pick([6,8]),eaten=rand(1,slices-2),left=slices-eaten,pool=['1/2','1/3','2/3','1/4','3/4','5/6','5/8','3/8','7/8','1/6','2/3'];
+      return{q:`A pizza has ${slices} equal slices. ${eaten} are eaten. What fraction is LEFT?`,visual:fractionBar(left,slices),
+        choices:makeChoicesFrom(`${left}/${slices}`,pool),answer:`${left}/${slices}`,
+        hints:[`First find how many slices are LEFT. Subtract.`,`The bottom stays ${slices} (total slices). The top is how many remain.`],
+        explain:`${slices} − ${eaten} = ${left} left, out of ${slices} → <b>${left}/${slices}</b>.`,
+        method:`Left = ${slices} − ${eaten} = ${left}. The bottom stays ${slices} (total slices) → <b>${left}/${slices}</b>.`};}
+    const eqs=[['1','2',4,'2'],['1','2',6,'3'],['1','2',8,'4'],['1','3',6,'2'],['1','4',8,'2'],['2','3',6,'4'],['1','3',9,'3']],e=pick(eqs),mult=e[2]/e[1];
+    return{q:`Fill the blank so they're equal:  ${e[0]}/${e[1]} = ?/${e[2]}`,visual:'',
+      choices:makeNumChoices(parseInt(e[3]),4),answer:e[3],
+      hints:[`What did the bottom get multiplied by to go from ${e[1]} to ${e[2]}?`,`The bottom was ×${mult}. Do the SAME to the top: ${e[0]} × ${mult}.`],
+      explain:`Bottom went ×${mult}, so top does too: ${e[0]} × ${mult} = <b>${e[3]}</b>.`,
+      method:`Whatever you do to the bottom, do to the top. Bottom ×${mult}, so ${e[0]} ×${mult} = <b>${e[3]}</b>.`};
+  },
+  measurement(lv){
+    if(lv===1){const len=rand(2,7);
+      return{q:`How many inches long is the green bar?`,visual:rulerSVG(len),
+        choices:makeNumChoices(len,3),answer:S(len),
+        hints:[`Start reading from 0 — not from the edge of the ruler.`,`Find the number right where the green bar ENDS.`],
+        explain:`Measured from 0, the bar ends at <b>${len} inches</b>.`,
+        method:`Line up 0 with the start, then read the number where it ends: <b>${len} inches</b>.`};}
+    if(lv===2){const h=rand(1,12),m=pick([0,5,10,15,20,25,30,35,40,45,50,55]),ans=fmt(h,m);
+      return{q:`What time does the clock show?`,visual:clockSVG(h,m),
+        choices:shuffle([ans,fmt(h,(m+15)%60),fmt((h%12)+1,m),fmt(h,(m+45)%60)]),answer:ans,
+        hints:[`The SHORT hand tells the hour.`,`For minutes, count by 5s from the 12: the long hand is at ${m} minutes.`],
+        explain:`Short hand → hour ${h}. Long hand → ${m} minutes. It's <b>${ans}</b>.`,
+        method:`Short hand = hour (${h}). For minutes, count by 5s to where the long hand points (${m}). Time = <b>${ans}</b>.`};}
+    if(rand(0,1)){const h=rand(1,9),m=pick([0,5,10,15,20,25,30]),add=pick([15,20,25,30,40,45]);let em=m+add,eh=h;if(em>=60){em-=60;eh++;}const st=fmt(h,m),en=fmt(eh,em);
+      return{q:`Recess starts at ${st} and lasts ${add} minutes. What time does it end?`,visual:clockSVG(h,m),
+        choices:shuffle([en,fmt(eh,(em+10)%60),fmt(h,(m+add-5)%60||55),fmt(eh+1,em)]),answer:en,
+        hints:[`Count forward from the start time by the minutes given.`,`Add the minutes: ${m} + ${add} = ${m+add}. If that's 60 or more, it rolls into the next hour.`],
+        explain:`${m} + ${add} = ${m+add} minutes → <b>${en}</b>.`,
+        method:`Add the minutes to the start: ${m} + ${add} = ${m+add}. If it passes 60, roll into the next hour → <b>${en}</b>.`};}
+    const h=rand(1,9),m1=pick([0,5,10,15]),gap=pick([20,25,30,35,40]);let m2=m1+gap,h2=h;if(m2>=60){m2-=60;h2++;}const t1=fmt(h,m1),t2=fmt(h2,m2);
+    return{q:`Sara started homework at ${t1} and finished at ${t2}. How many minutes did it take?`,visual:'',
+      choices:makeNumChoices(gap,15),answer:S(gap),
+      hints:[`Count forward from ${t1} up to ${t2}.`,`Count the minutes in chunks (to the next hour, then the rest).`],
+      explain:`From ${t1} to ${t2} is <b>${gap} minutes</b>.`,
+      method:`Count up from ${t1} to ${t2} in chunks (to the next hour, then the rest) → <b>${gap} minutes</b>.`};
+  },
+  geometry(lv){
+    if(lv===1){if(rand(0,1)){const names=['square','rectangle','triangle','rhombus','pentagon','hexagon'],name=pick(names);
+        return{q:`What is this shape called?`,visual:shapeSVG(name),choices:makeChoicesFrom(name,names),answer:name,
+          hints:[`Count the number of sides.`,`Match the number of sides to the name (tri=3, quad=4, pent=5, hex=6).`],
+          explain:`This shape has the sides of a <b>${name}</b>.`,
+          method:`Count the sides — that number names the shape: <b>${name}</b>.`};}
+      const riddles=[['I have 3 straight sides and 3 corners.','triangle'],['I have 4 equal sides and 4 square corners.','square'],['I have 4 sides, and my opposite sides are equal (like a door).','rectangle'],['I have 6 sides.','hexagon'],['I have 5 sides.','pentagon']],r=pick(riddles);
+      return{q:`Riddle: "${r[0]}" What shape am I?`,visual:'',choices:makeChoicesFrom(r[1],['square','rectangle','triangle','rhombus','pentagon','hexagon']),answer:r[1],
+        hints:[`Focus on the number of sides in the clue.`,`Count the sides mentioned, then pick the matching name.`],
+        explain:`Those clues describe a <b>${r[1]}</b>.`,
+        method:`Match the number of sides in the clue to the shape name → <b>${r[1]}</b>.`};}
+    if(lv===2){if(rand(0,1)){const w=rand(2,6),h=rand(2,5);
+        return{q:`What is the AREA? (how many squares cover it)`,visual:areaGrid(w,h),choices:makeNumChoices(w*h,8),answer:S(w*h),
+          hints:[`Instead of counting one by one, look at the rows and columns.`,`Multiply rows × columns: ${h} × ${w}.`],
+          explain:`Area = rows × columns = ${h} × ${w} = <b>${w*h}</b> squares.`,
+          method:`Don't count one-by-one — multiply rows × columns: ${h} × ${w} = <b>${w*h}</b>.`};}
+      const w=rand(2,6),h=rand(2,5);
+      return{q:`What is the PERIMETER? (distance all the way around)`,visual:areaGrid(w,h),choices:makeNumChoices(2*(w+h),6),answer:S(2*(w+h)),
+        hints:[`Perimeter means add up the length of every side.`,`Two sides are ${w} and two sides are ${h}: ${w}+${w}+${h}+${h}.`],
+        explain:`Perimeter = ${w}+${w}+${h}+${h} = <b>${2*(w+h)}</b> units.`,
+        method:`Fast way: add the two different sides, then double: 2 × (${w}+${h}) = 2 × ${w+h} = <b>${2*(w+h)}</b>.`};}
+    if(rand(0,1)){const w=rand(3,7),h=rand(2,6);
+      return{q:`A garden is ${w} feet wide and ${h} feet long. How many square feet of grass covers it?`,visual:'',choices:makeNumChoices(w*h,10),answer:S(w*h),
+        hints:[`Covering the whole inside means AREA.`,`Area = length × width = ${w} × ${h}.`],
+        explain:`Area = ${w} × ${h} = <b>${w*h}</b> square feet.`,
+        method:`Covering the inside = area = length × width: ${w} × ${h} = <b>${w*h}</b>.`};}
+    const names=['square','rectangle','rhombus','triangle'],odd='triangle',list=shuffle(names);
+    return{q:`Which shape is NOT a quadrilateral?`,visual:'',choices:list,answer:odd,
+      hints:[`"Quadrilateral" means a shape with 4 sides.`,`Count the sides of each shape. Which one does NOT have 4?`],
+      explain:`Squares, rectangles, and rhombuses all have 4 sides. A <b>triangle</b> has 3, so it's the odd one out.`,
+      method:`Count sides quickly: a quadrilateral has 4. The one that doesn't is the <b>${odd}</b>.`};
+  },
+  data(lv){
+    const items=[['🍎','Apples'],['🍌','Bananas'],['🍇','Grapes'],['🍊','Oranges'],['⭐','Stars'],['🐟','Fish']];
+    if(lv===1){const chosen=shuffle(items).slice(0,3),rows=chosen.map(c=>({name:c[1],count:rand(2,6),emoji:c[0]})),t=pick(rows);
+      const vis=rows.map(r=>`<div class="pgraph-row"><span class="lbl">${r.name}</span>${r.emoji.repeat(r.count)}</div>`).join('');
+      return{q:`How many ${t.name} are there?`,visual:`<div style="text-align:left">${vis}</div>`,choices:makeNumChoices(t.count,3),answer:S(t.count),
+        hints:[`Each picture stands for 1.`,`Just count the ${t.name} pictures in that row.`],
+        explain:`Counting the pictures, there are <b>${t.count}</b> ${t.name}.`,
+        method:`Each picture stands for 1, so just count them in that row → <b>${t.count}</b>.`};}
+    if(lv===2){const cats=shuffle(['Mon','Tue','Wed','Thu']).slice(0,4),vals=cats.map(()=>rand(1,6)*2),i=rand(0,3);
+      return{q:`How many on ${cats[i]}?`,visual:barGraphSVG(cats,vals,2),choices:makeNumChoices(vals[i],4),answer:S(vals[i]),
+        hints:[`Check the scale on the side — it counts by 2s, not 1s.`,`Follow the ${cats[i]} bar up to its top, then read across to the number.`],
+        explain:`Reading the scale (by 2s), the ${cats[i]} bar reaches <b>${vals[i]}</b>.`,
+        method:`Read with the scale, not by 1s: count 2, 4, 6… up the ${cats[i]} bar → <b>${vals[i]}</b>.`};}
+    const scale=pick([5,10]),cats=shuffle(['Red','Blue','Green','Gold']).slice(0,4),vals=cats.map(()=>rand(1,5)*scale),i=rand(0,3),j=(i+1)%4,diff=Math.abs(vals[i]-vals[j]);
+    return{q:`How many MORE ${cats[i]} than ${cats[j]}? (scale counts by ${scale})`,visual:barGraphSVG(cats,vals,scale),choices:makeNumChoices(diff,scale),answer:S(diff),
+      hints:[`First read BOTH bars using the scale (count by ${scale}s).`,`"How many more" means subtract the smaller from the larger.`],
+      explain:`${cats[i]} = ${vals[i]}, ${cats[j]} = ${vals[j]}. ${Math.max(vals[i],vals[j])} − ${Math.min(vals[i],vals[j])} = <b>${diff}</b>.`,
+      method:`Read both bars using the scale (by ${scale}s), then subtract: ${Math.max(vals[i],vals[j])} − ${Math.min(vals[i],vals[j])} = <b>${diff}</b>.`};
+  }
+};
+
+const TOPICS=[
+  {id:'counting',name:'Counting & Patterns',icon:'🔢'},
+  {id:'algebra',name:'Multiply & Divide',icon:'✖️'},
+  {id:'numberops',name:'Add & Subtract',icon:'➕'},
+  {id:'fractions',name:'Fractions',icon:'🍕'},
+  {id:'measurement',name:'Measurement & Time',icon:'📏'},
+  {id:'geometry',name:'Shapes & Area',icon:'🔷'},
+  {id:'data',name:'Graphs & Data',icon:'📊'}
+];
+
+/* ===================== Progress ===================== */
+const KEY='anvikaMathProgress_v3';
+let PROG=load();
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d)return d;}catch(e){}const p={stars:0,streak:0,best:0,topics:{}};TOPICS.forEach(t=>p.topics[t.id]={level:1,qmBest:0,bestScale:0,bestBand:''});return p;}
+function save(){localStorage.setItem(KEY,JSON.stringify(PROG));}
+function refreshStats(){document.getElementById('statStars').textContent=PROG.stars;document.getElementById('statStreak').textContent=PROG.streak;document.getElementById('statBest').textContent=PROG.best;}
+
+/* ===================== Navigation ===================== */
+let current=null;
+const views=['home','modePick','lesson','practice','quick','result'];
+function show(v){views.forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==v));}
+function goHome(){stopTimer();show('home');buildTopics();refreshStats();}
+function buildTopics(){const g=document.getElementById('topicGrid');g.innerHTML='';TOPICS.forEach(t=>{const tp=PROG.topics[t.id],band=tp.bestBand?tp.bestBand:'—',el=document.createElement('button');el.className='topic';el.innerHTML=`<div class="ic">${t.icon}</div><div class="tn">${t.name}</div><div class="lv">Best: ${band} · ⚡${tp.qmBest}</div>`;el.onclick=()=>openTopic(t.id);g.appendChild(el);});}
+function openTopic(id){current=id;const t=TOPICS.find(x=>x.id===id);document.getElementById('modeTitle').textContent=t.icon+' '+t.name;document.getElementById('modeSub').textContent='Read the lesson, then practice — or jump into a speed round.';show('modePick');}
+function openLesson(){const L=LESSONS[current];document.getElementById('lessonTitle').textContent=L.title;document.getElementById('lessonBody').innerHTML=L.html;show('lesson');}
+function beginQuestions(){startPractice();}
+
+/* ===================== Practice Mode (2 attempts, BOY scoring) ===================== */
+const SLEN=10;            // questions per practice set
+let qNum=0,sessScore=0;   // sessScore in points: 1 first-try, 0.5 after-hint, 0 wrong
+let pAnswer=null,pBasicHint='',pExplain='',pMethod='',attempts=0,finished=false;
+
+function startPractice(){qNum=0;sessScore=0;show('practice');nextPractice();}
+
+function levelFor(n){return n<=3?1:(n<=7?2:3);}
+
+function nextPractice(){
+  if(qNum>=SLEN){showResults();return;}
+  qNum++;
+  attempts=0;finished=false;
+  document.getElementById('pFeedback').classList.remove('show');
+  const hb=document.getElementById('pHint');hb.classList.remove('show');
+  document.getElementById('pHintItems').innerHTML='';document.getElementById('pRetry').textContent='';
+  const lv=levelFor(qNum);
+  document.getElementById('pracLevel').textContent=lv===1?'Easy':(lv===2?'Medium':'Hard');
+  document.getElementById('pProgress').textContent=qNum+' / '+SLEN;
+  const item=GEN[current](lv);
+  pAnswer=item.answer;pBasicHint=(item.hints&&item.hints[0])?item.hints[0]:'Read the question again slowly and picture what it is asking.';pExplain=item.explain;pMethod=item.method||'';
+  document.getElementById('pQ').innerHTML=item.q;
+  document.getElementById('pVisual').innerHTML=item.visual||'';
+  const box=document.getElementById('pChoices');box.innerHTML='';
+  item.choices.forEach(c=>{const b=document.createElement('button');b.className='choice';b.textContent=c;b.onclick=()=>answerPractice(b,c);box.appendChild(b);});
+}
+
+function answerPractice(btn,val){
+  if(finished)return;
+  if(val===pAnswer){
+    finished=true;
+    document.querySelectorAll('#pChoices .choice').forEach(b=>{b.disabled=true;if(b.textContent===pAnswer)b.classList.add('correct');});
+    document.getElementById('pHint').classList.remove('show');
+    const firstTry=(attempts===0);
+    sessScore+=firstTry?1:0.5;
+    PROG.stars++;
+    if(firstTry){PROG.streak++;if(PROG.streak>PROG.best)PROG.best=PROG.streak;}
+    const fb=document.getElementById('pFeedback');fb.classList.remove('neutral');fb.classList.add('show');
+    document.getElementById('pFTitle').textContent=firstTry?'✅ Correct! +1 star':'✅ You got it on the second try! 💪 +1 star';
+    document.getElementById('pExplain').innerHTML='<b>Why it works:</b> '+pExplain+(pMethod?'<div style="margin-top:12px;padding:12px 14px;background:var(--accent-soft);border-radius:12px;border-left:4px solid var(--accent)"><b>⚡ RSM quick way:</b> '+pMethod+'</div>':'');
+    save();refreshStats();
+  }else{
+    attempts++;
+    btn.classList.add('wrong');btn.disabled=true;
+    PROG.streak=0;refreshStats();save();
+    if(attempts>=2){
+      // second wrong -> score 0 and move on (no answer shown)
+      finished=true;
+      document.querySelectorAll('#pChoices .choice').forEach(b=>b.disabled=true);
+      document.getElementById('pHint').classList.remove('show');
+      const fb=document.getElementById('pFeedback');fb.classList.add('neutral');fb.classList.add('show');
+      document.getElementById('pFTitle').textContent='Let\'s move on 🌱';
+      document.getElementById('pExplain').innerHTML='That one was tricky. No worries — you\'ll get another question like it soon. Keep going!';
+    }else{
+      // first wrong -> one small basic hint, one more chance
+      document.getElementById('pHintTitle').textContent='One more try — here\'s a little help 🤔';
+      document.getElementById('pHintItems').innerHTML='<div class="hitem">'+pBasicHint+'</div>';
+      document.getElementById('pRetry').textContent='You have one more try. You can do it!';
+      document.getElementById('pHint').classList.add('show');
+    }
+  }
+}
+
+/* ---- BOY-style scorecard ---- */
+function bandFor(pct){
+  if(pct>=90)return{key:'exc',label:'Exceeds',lo:1586,hi:1650,plo:90,phi:100};
+  if(pct>=75)return{key:'meet',label:'Meets',lo:1493,hi:1585,plo:75,phi:90};
+  if(pct>=60)return{key:'app',label:'Approaching',lo:1452,hi:1492,plo:60,phi:75};
+  return{key:'dnm',label:'Does not meet',lo:1380,hi:1451,plo:0,phi:60};
+}
+function showResults(){
+  const pct=Math.round(sessScore/SLEN*100);
+  const b=bandFor(pct);
+  const scale=Math.round(b.lo+(pct-b.plo)/(b.phi-b.plo)*(b.hi-b.lo));
+  const t=TOPICS.find(x=>x.id===current);
+  document.getElementById('rTopicName').textContent=t.icon+' '+t.name+' — Report';
+  const bandEl=document.getElementById('rBand');bandEl.textContent=b.label;bandEl.className='band '+b.key;
+  document.getElementById('rScale').textContent=scale;
+  // marker position across full 1380..1650 range
+  const pos=Math.max(0,Math.min(100,(scale-1380)/(1650-1380)*100));
+  document.getElementById('rMarker').style.left=pos+'%';
+  document.getElementById('rDetail').innerHTML=`She earned <b>${sessScore}</b> of ${SLEN} points (${pct}%).<br><span style="color:var(--muted);font-size:13px">Full point = right on the 1st try · Half point = right on the 2nd try</span>`;
+  const msgs={exc:'Amazing work — she has really mastered this! 🌟',meet:'Great job — she is right on grade level here. 👏',app:'Good progress — a little more practice and she\'ll be there! 🌱',dnm:'This one needs practice — try the Lesson again, then come back. 💛'};
+  document.getElementById('rMsg').textContent=msgs[b.key];
+  // save best
+  const tp=PROG.topics[current];
+  if(!tp.bestScale||scale>tp.bestScale){tp.bestScale=scale;tp.bestBand=b.label;}
+  save();refreshStats();
+  show('result');
+}
+
+/* ===================== Quick Math Mode ===================== */
+let qScore=0,qTime=60,qTimer=null,qAnswer=null;
+function startQuick(){qScore=0;qTime=60;document.getElementById('quickPlay').classList.remove('hidden');document.getElementById('quickDone').classList.add('hidden');document.getElementById('qScore').textContent='Score: 0';document.getElementById('qTimer').textContent='60';show('quick');nextQuick();stopTimer();qTimer=setInterval(()=>{qTime--;document.getElementById('qTimer').textContent=qTime;if(qTime<=0)endQuick();},1000);}
+function nextQuick(){const lv=Math.min(3,Math.max(1,PROG.topics[current].level)),useLv=pick([Math.max(1,lv-1),lv]);const item=GEN[current](useLv);qAnswer=item.answer;document.getElementById('qQ').innerHTML=item.q;document.getElementById('qVisual').innerHTML=item.visual||'';const box=document.getElementById('qChoices');box.innerHTML='';item.choices.forEach(c=>{const b=document.createElement('button');b.className='choice';b.textContent=c;b.onclick=()=>answerQuick(b,c);box.appendChild(b);});}
+function answerQuick(btn,val){if(val===qAnswer){qScore++;document.getElementById('qScore').textContent='Score: '+qScore;PROG.stars++;save();}else{PROG.streak=0;refreshStats();save();}nextQuick();}
+function endQuick(){stopTimer();document.getElementById('quickPlay').classList.add('hidden');document.getElementById('quickDone').classList.remove('hidden');document.getElementById('qFinal').textContent=qScore;const rec=document.getElementById('qRecord');if(qScore>PROG.topics[current].qmBest){PROG.topics[current].qmBest=qScore;rec.textContent='🎉 New best score!';}else{rec.textContent='Your best is '+PROG.topics[current].qmBest;}refreshStats();save();}
+function quitQuick(){stopTimer();goHome();}
+function stopTimer(){if(qTimer){clearInterval(qTimer);qTimer=null;}}
+
+/* ===================== Toast ===================== */
+let toastT=null;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1800);}
+
+/* ===================== Init ===================== */
+buildTopics();refreshStats();show('home');
+</script>
+</body>
+</html>
