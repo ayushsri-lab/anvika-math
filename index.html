@@ -114,6 +114,13 @@
   .map-img{width:100%;height:auto;border-radius:10px;display:block;background:#eaf3fb;}
   .map-img.zoom{cursor:zoom-in;transition:transform .15s;}
   .map-img.zoomed{transform:scale(1.9);cursor:zoom-out;transform-origin:center;}
+  .scratch-wrap{margin:10px 0 4px;border:2px dashed var(--line);border-radius:14px;padding:8px;background:#fcfcff;}
+  .scratch-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;}
+  .pen-btn{width:28px;height:28px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0;}
+  .pen-btn.active{box-shadow:0 0 0 3px var(--accent);}
+  .scratch-act{border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 10px;font-size:14px;cursor:pointer;}
+  .scratch-act.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  #scratchPad{width:100%;height:260px;background:#fff;border-radius:10px;border:1px solid var(--line);touch-action:none;display:block;cursor:crosshair;}
   .roll-btn{font-size:20px;}
   .hidden{display:none;}
   .pgraph-row{display:flex;align-items:center;gap:4px;margin:3px 0;font-size:22px;}
@@ -275,6 +282,7 @@
       <div class="toolbar">
         <button class="link" onclick="goHome()">&larr; Home</button>
         <div class="right">
+          <span class="link" onclick="toggleScratch()">✏️ Write Pad</span>
           <span class="link" onclick="openLesson()">📖 Lesson</span>
           <span class="progress-badge" id="pProgress">1 / 10</span>
           <span class="lvbadge" id="pracLevel">Level 1</span>
@@ -282,6 +290,17 @@
       </div>
       <div class="question" id="pQ"></div>
       <div class="visual" id="pVisual"></div>
+      <div class="scratch-wrap hidden" id="scratchWrap">
+        <div class="scratch-tools">
+          <button class="pen-btn active" style="background:#2b6cff" onclick="scratchPen('#2b6cff',this)"></button>
+          <button class="pen-btn" style="background:#111" onclick="scratchPen('#111',this)"></button>
+          <button class="pen-btn" style="background:#e23b3b" onclick="scratchPen('#e23b3b',this)"></button>
+          <button class="pen-btn" style="background:#1aa34a" onclick="scratchPen('#1aa34a',this)"></button>
+          <button class="scratch-act" id="eraseBtn" onclick="scratchEraser(this)">🧽 Erase</button>
+          <button class="scratch-act" onclick="clearScratch()">🗑️ Clear</button>
+        </div>
+        <canvas id="scratchPad"></canvas>
+      </div>
       <div class="choices" id="pChoices"></div>
       <div class="hintbox" id="pHint"><div class="htitle" id="pHintTitle">A little help 🤔</div><div id="pHintItems"></div><div class="retry" id="pRetry"></div></div>
       <div class="feedback" id="pFeedback">
@@ -706,6 +725,21 @@ const SLEN=10;            // questions per practice set
 let qNum=0,sessScore=0;   // sessScore in points: 1 first-try, 0.5 after-hint, 0 wrong
 let pAnswer=null,pBasicHint='',pExplain='',pMethod='',attempts=0,finished=false;
 
+/* ---- Write Pad (scratch canvas) ---- */
+let scInit=false,scDrawing=false,scColor='#2b6cff',scErase=false,scLast=null;
+function scPos(c,e){const r=c.getBoundingClientRect();const t=(e.touches&&e.touches[0])||e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+function sizeScratch(){const c=document.getElementById('scratchPad');if(!c)return;const w=c.clientWidth||320,h=260,r=window.devicePixelRatio||1;c.width=w*r;c.height=h*r;const ctx=c.getContext('2d');ctx.setTransform(r,0,0,r,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.lineCap='round';ctx.lineJoin='round';}
+function setupScratch(){if(scInit)return;scInit=true;const c=document.getElementById('scratchPad');if(!c)return;
+  const start=e=>{e.preventDefault();scDrawing=true;scLast=scPos(c,e);};
+  const move=e=>{if(!scDrawing)return;e.preventDefault();const p=scPos(c,e),ctx=c.getContext('2d');ctx.strokeStyle=scErase?'#fff':scColor;ctx.lineWidth=scErase?26:3.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(scLast.x,scLast.y);ctx.lineTo(p.x,p.y);ctx.stroke();scLast=p;};
+  const end=()=>{scDrawing=false;};
+  c.addEventListener('pointerdown',start);c.addEventListener('pointermove',move);
+  window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);}
+function toggleScratch(){const w=document.getElementById('scratchWrap');if(!w)return;const showing=w.classList.contains('hidden');w.classList.toggle('hidden');if(showing){setupScratch();requestAnimationFrame(sizeScratch);}}
+function clearScratch(){sizeScratch();}
+function scratchPen(col,btn){scColor=col;scErase=false;document.querySelectorAll('.pen-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');const e=document.getElementById('eraseBtn');if(e)e.classList.remove('active');}
+function scratchEraser(btn){scErase=true;if(btn)btn.classList.add('active');}
+
 function startPractice(){qNum=0;sessScore=0;show('practice');nextPractice();}
 
 function levelFor(n){return n<=3?1:(n<=7?2:3);}
@@ -726,6 +760,7 @@ function nextPractice(){
   document.getElementById('pVisual').innerHTML=item.visual||'';
   const box=document.getElementById('pChoices');box.innerHTML='';
   item.choices.forEach(c=>{const b=document.createElement('button');b.className='choice';b.textContent=c;b.onclick=()=>answerPractice(b,c);box.appendChild(b);});
+  const sw=document.getElementById('scratchWrap');if(sw&&!sw.classList.contains('hidden'))requestAnimationFrame(sizeScratch);
 }
 
 function answerPractice(btn,val){
@@ -815,26 +850,22 @@ const READINGS={
       <div class="map-card">
         <h3>🇺🇸 The United States</h3>
         <p class="cap">All 50 states. Can you find your state? Each color is a different state.</p>
-        <img class="map-img zoom" alt="Map of the United States with state names" loading="lazy"
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Map_of_USA_with_state_names.svg/1280px-Map_of_USA_with_state_names.svg.png">
+        <img class="map-img zoom" alt="Map of the United States with state names" loading="lazy" src="maps/us-map.png">
       </div>
       <div class="map-card">
         <h3>🌍 The Whole World</h3>
         <p class="cap">All 7 continents and 5 oceans. Find North America (where the USA is!), and the big blue oceans.</p>
-        <img class="map-img zoom" alt="Political map of the world" loading="lazy"
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Worldmap_LandAndPolitical.jpg/1280px-Worldmap_LandAndPolitical.jpg">
+        <img class="map-img zoom" alt="Political map of the world" loading="lazy" src="maps/world-map.jpg">
       </div>
       <div class="map-card">
         <h3>🇪🇺 Europe</h3>
         <p class="cap">Many countries close together — France, Spain, Italy, Germany and more.</p>
-        <img class="map-img zoom" alt="Map of Europe with country names" loading="lazy"
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Europe_countries_map_en_2.png/1280px-Europe_countries_map_en_2.png">
+        <img class="map-img zoom" alt="Map of Europe with country names" loading="lazy" src="maps/europe-map.jpg">
       </div>
       <div class="map-card">
         <h3>🌏 Asia</h3>
         <p class="cap">The biggest continent — home to China, India, Japan and many more.</p>
-        <img class="map-img zoom" alt="Map of Asia" loading="lazy"
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Asia_%28orthographic_projection%29.svg/1280px-Asia_%28orthographic_projection%29.svg.png">
+        <img class="map-img zoom" alt="Map of Asia" loading="lazy" src="maps/asia-map.png">
       </div>
       <div class="strat" style="margin-top:12px">💡 Try finding: the <b>United States</b>, the country <b>India</b>, the <b>Pacific Ocean</b> (the biggest), and <b>Australia</b>.</div>`,
     onOpen:function(){document.querySelectorAll('#readBody .map-img.zoom').forEach(img=>{img.onclick=()=>img.classList.toggle('zoomed');});},
