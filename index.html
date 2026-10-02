@@ -108,6 +108,12 @@
   .mitem.done{border-color:var(--good);background:var(--good-soft);color:var(--good);cursor:default;}
   .mitem.bad{border-color:var(--bad);background:var(--bad-soft);}
   .flag-big{font-size:96px;text-align:center;margin:6px 0 10px;}
+  .map-card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px;margin:14px 0;box-shadow:0 3px 10px rgba(0,0,0,.05);}
+  .map-card h3{margin:0 0 4px;font-size:19px;}
+  .map-card .cap{color:var(--muted);font-size:14px;margin:0 0 10px;}
+  .map-img{width:100%;height:auto;border-radius:10px;display:block;background:#eaf3fb;}
+  .map-img.zoom{cursor:zoom-in;transition:transform .15s;}
+  .map-img.zoomed{transform:scale(1.9);cursor:zoom-out;transform-origin:center;}
   .roll-btn{font-size:20px;}
   .hidden{display:none;}
   .pgraph-row{display:flex;align-items:center;gap:4px;margin:3px 0;font-size:22px;}
@@ -804,21 +810,42 @@ const $=id=>document.getElementById(id);
 
 /* ---- Reading passages (3rd-grade, Meridian-aligned) + quizzes ---- */
 const READINGS={
-  maps:{icon:'🗺️',title:'Reading Maps',cat:'Geography',
-    body:`<p>A <b>map</b> is a flat picture that shows a place from above, like a bird looking down. Maps help us find where things are and how to get from one place to another.</p>
-      <h3>Parts of a map</h3>
-      <ul><li><b>Compass rose</b> — shows the four main directions: North, South, East, and West. (Remember: <i>Never Eat Soggy Waffles</i> going clockwise — N, E, S, W.)</li>
-      <li><b>Map key</b> (or legend) — explains what the little symbols mean, like 🏥 for a hospital or 🌳 for a park.</li>
-      <li><b>Symbols</b> — small pictures or colors that stand for real things. Blue usually means water.</li>
-      <li><b>Scale</b> — tells you how a small distance on the map equals a big distance in real life.</li></ul>
-      <div class="lesson-body"><div class="strat">On most maps, <b>North is up</b>, South is down, East is right, and West is left.</div></div>
-      <p>Maps can show a classroom, a city, a country, or the whole world!</p>`,
+  maps:{icon:'🗺️',title:'Maps of the World',cat:'Geography',
+    body:`<p style="margin-top:0">Explore real maps! Tap any map to zoom in. On most maps <b>North is up</b>, South is down, East is right, West is left. Blue is water. 🌊</p>
+      <div class="map-card">
+        <h3>🇺🇸 The United States</h3>
+        <p class="cap">All 50 states. Can you find your state? Each color is a different state.</p>
+        <img class="map-img zoom" alt="Map of the United States with state names" loading="lazy"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Map_of_USA_with_state_names.svg/1280px-Map_of_USA_with_state_names.svg.png">
+      </div>
+      <div class="map-card">
+        <h3>🌍 The Whole World</h3>
+        <p class="cap">All 7 continents and 5 oceans. Find North America (where the USA is!), and the big blue oceans.</p>
+        <img class="map-img zoom" alt="Political map of the world" loading="lazy"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Worldmap_LandAndPolitical.jpg/1280px-Worldmap_LandAndPolitical.jpg">
+      </div>
+      <div class="map-card">
+        <h3>🇪🇺 Europe</h3>
+        <p class="cap">Many countries close together — France, Spain, Italy, Germany and more.</p>
+        <img class="map-img zoom" alt="Map of Europe with country names" loading="lazy"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Europe_countries_map_en_2.png/1280px-Europe_countries_map_en_2.png">
+      </div>
+      <div class="map-card">
+        <h3>🌏 Asia</h3>
+        <p class="cap">The biggest continent — home to China, India, Japan and many more.</p>
+        <img class="map-img zoom" alt="Map of Asia" loading="lazy"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Asia_%28orthographic_projection%29.svg/1280px-Asia_%28orthographic_projection%29.svg.png">
+      </div>
+      <div class="strat" style="margin-top:12px">💡 Try finding: the <b>United States</b>, the country <b>India</b>, the <b>Pacific Ocean</b> (the biggest), and <b>Australia</b>.</div>`,
+    onOpen:function(){document.querySelectorAll('#readBody .map-img.zoom').forEach(img=>{img.onclick=()=>img.classList.toggle('zoomed');});},
     quiz:[
-      {q:'What does a <b>compass rose</b> show?',choices:['The four directions','How much a place costs','The weather','The time'],answer:'The four directions',explain:'A compass rose shows North, South, East, and West.'},
+      {q:'How many <b>states</b> are in the United States?',choices:['50','13','100','25'],answer:'50',explain:'The USA has 50 states.'},
       {q:'On most maps, which direction is <b>up</b>?',choices:['North','South','East','West'],answer:'North',explain:'By tradition, North points up on most maps.'},
-      {q:'What part of a map explains the symbols?',choices:['The map key','The title','The border','The scale'],answer:'The map key',explain:'The map key (legend) tells you what each symbol means.'},
-      {q:'Blue on a map usually stands for…',choices:['Water','Mountains','Roads','Forests'],answer:'Water',explain:'Blue almost always means water — rivers, lakes, and oceans.'},
-      {q:'If North is up, then <b>East</b> is on the…',choices:['Right','Left','Top','Bottom'],answer:'Right',explain:'With North up, East is to the right and West is to the left.'}
+      {q:'On a map, <b>blue</b> usually stands for…',choices:['Water','Mountains','Roads','Forests'],answer:'Water',explain:'Blue almost always means water — rivers, lakes, and oceans.'},
+      {q:'Which is the <b>biggest ocean</b> in the world?',choices:['Pacific Ocean','Atlantic Ocean','Indian Ocean','Arctic Ocean'],answer:'Pacific Ocean',explain:'The Pacific Ocean is the largest ocean on Earth.'},
+      {q:'The United States is on which <b>continent</b>?',choices:['North America','Europe','Asia','Africa'],answer:'North America',explain:'The USA is in North America.'},
+      {q:'If North is up, then <b>East</b> is on the…',choices:['Right','Left','Top','Bottom'],answer:'Right',explain:'With North up, East is to the right and West is to the left.'},
+      {q:'Which continent is the <b>biggest</b>?',choices:['Asia','Africa','Europe','Australia'],answer:'Asia',explain:'Asia is the largest continent and has the most people.'}
     ]},
   continents:{icon:'🌍',title:'Continents & Oceans',cat:'Geography',
     body:`<p>Earth has <b>7 continents</b> (huge areas of land) and <b>5 oceans</b> (huge areas of salt water).</p>
@@ -973,14 +1000,15 @@ const READINGS={
 
 /* ---- Learn grid: readings + UNLIMITED challenge quizzes ---- */
 const CHALLENGES={
+  mapsChallenge:{icon:'🗺️',title:'Maps Challenge',cat:'Unlimited Quiz',gen:()=>mapsGen()},
   sciChallenge:{icon:'🔬',title:'Science Challenge',cat:'Unlimited Quiz',gen:()=>sciGen()},
   geoChallenge:{icon:'🌍',title:'Geography Challenge',cat:'Unlimited Quiz',gen:()=>geoGen()},
   gkChallenge:{icon:'🧠',title:'GK Challenge',cat:'Unlimited Quiz',gen:()=>gkGen()}
 };
-const LEARN_ORDER=['maps','continents','soil','resources','matter','energy','forces','landforms','solar','water','ecosystems','community','sciChallenge','geoChallenge','gkChallenge'];
+const LEARN_ORDER=['maps','continents','soil','resources','matter','energy','forces','landforms','solar','water','ecosystems','community','mapsChallenge','sciChallenge','geoChallenge','gkChallenge'];
 function buildLearnGrid(){const g=$('learnGrid');g.innerHTML='';LEARN_ORDER.forEach(id=>{const it=READINGS[id]||CHALLENGES[id];const el=document.createElement('button');el.className='topic';el.innerHTML=`<div class="ic">${it.icon}</div><div class="tn">${it.title}</div><div class="lv">${it.cat}</div>`;el.onclick=()=>openLearn(id);g.appendChild(el);});}
 let curLearn=null;
-function openLearn(id){if(READINGS[id]){const r=READINGS[id];curLearn=id;$('readTitle').textContent=r.icon+' '+r.title;$('readBody').innerHTML=r.body;show('reading');}else if(CHALLENGES[id]){const c=CHALLENGES[id];runEndless(c.gen,c.icon+' '+c.title,'learnHome');}}
+function openLearn(id){if(READINGS[id]){const r=READINGS[id];curLearn=id;$('readTitle').textContent=r.icon+' '+r.title;$('readBody').innerHTML=r.body;show('reading');if(r.onOpen)r.onOpen();}else if(CHALLENGES[id]){const c=CHALLENGES[id];runEndless(c.gen,c.icon+' '+c.title,'learnHome');}}
 function startReadingQuiz(){const r=READINGS[curLearn];runQuiz(r.quiz,r.icon+' '+r.title+' — Quiz','reading');}
 
 /* ---- Generic quiz engine (fixed OR endless/unlimited) ---- */
@@ -1046,6 +1074,26 @@ function geoGen(){const r=Math.random();if(r<0.28)return qCapital();if(r<0.5)ret
 function startCapitalQuiz(){runEndless(()=>Math.random()<0.5?qCapital():qCountryOfCap(),'🏙️ Capital Quiz','gamesHome');}
 function startFlagQuiz(){runEndless(qFlag,'🚩 Flag Quiz','gamesHome');}
 function startGeoChallenge(){runEndless(geoGen,'🌍 Geography Challenge','gamesHome');}
+
+/* ---- Maps Challenge: US states + map reading (unlimited) ---- */
+const US_STATES=[['Alabama','Montgomery'],['Alaska','Juneau'],['Arizona','Phoenix'],['Arkansas','Little Rock'],['California','Sacramento'],['Colorado','Denver'],['Connecticut','Hartford'],['Delaware','Dover'],['Florida','Tallahassee'],['Georgia','Atlanta'],['Hawaii','Honolulu'],['Idaho','Boise'],['Illinois','Springfield'],['Indiana','Indianapolis'],['Iowa','Des Moines'],['Kansas','Topeka'],['Kentucky','Frankfort'],['Louisiana','Baton Rouge'],['Maine','Augusta'],['Maryland','Annapolis'],['Massachusetts','Boston'],['Michigan','Lansing'],['Minnesota','Saint Paul'],['Mississippi','Jackson'],['Missouri','Jefferson City'],['Montana','Helena'],['Nebraska','Lincoln'],['Nevada','Carson City'],['New Hampshire','Concord'],['New Jersey','Trenton'],['New Mexico','Santa Fe'],['New York','Albany'],['North Carolina','Raleigh'],['North Dakota','Bismarck'],['Ohio','Columbus'],['Oklahoma','Oklahoma City'],['Oregon','Salem'],['Pennsylvania','Harrisburg'],['Rhode Island','Providence'],['South Carolina','Columbia'],['South Dakota','Pierre'],['Tennessee','Nashville'],['Texas','Austin'],['Utah','Salt Lake City'],['Vermont','Montpelier'],['Virginia','Richmond'],['Washington','Olympia'],['West Virginia','Charleston'],['Wisconsin','Madison'],['Wyoming','Cheyenne']];
+function qStateCapital(){const s=pick(US_STATES);const w=shuffle(US_STATES.filter(x=>x[1]!==s[1])).slice(0,3).map(x=>x[1]);return{q:`What is the capital of <b>${s[0]}</b>?`,choices:shuffle([s[1],...w]),answer:s[1],explain:`The capital of ${s[0]} is <b>${s[1]}</b>.`};}
+function qCapitalState(){const s=pick(US_STATES);const w=shuffle(US_STATES.filter(x=>x[0]!==s[0])).slice(0,3).map(x=>x[0]);return{q:`<b>${s[1]}</b> is the capital of which state?`,choices:shuffle([s[0],...w]),answer:s[0],explain:`${s[1]} is the capital of <b>${s[0]}</b>.`};}
+const MAP_READING=[
+  {q:'On most maps, which direction is <b>up</b>?',choices:['North','South','East','West'],answer:'North',explain:'North points up on most maps.'},
+  {q:'If North is up, <b>East</b> is on the…',choices:['Right','Left','Top','Bottom'],answer:'Right',explain:'With North up, East is on the right.'},
+  {q:'If North is up, <b>West</b> is on the…',choices:['Left','Right','Top','Bottom'],answer:'Left',explain:'With North up, West is on the left.'},
+  {q:'What shows the four directions on a map?',choices:['A compass rose','A map key','A title','A scale'],answer:'A compass rose',explain:'A compass rose shows N, S, E, W.'},
+  {q:'What part of a map explains the symbols?',choices:['The map key','The title','The border','North'],answer:'The map key',explain:'The map key (legend) explains the symbols.'},
+  {q:'On a map, <b>blue</b> usually means…',choices:['Water','Mountains','Roads','Forests'],answer:'Water',explain:'Blue means water.'},
+  {q:'How many states are in the USA?',choices:['50','13','48','52'],answer:'50',explain:'The USA has 50 states.'},
+  {q:'What is the capital of the United States?',choices:['Washington, DC','New York','Los Angeles','Chicago'],answer:'Washington, DC',explain:'Washington, DC is the US capital.'},
+  {q:'The United States is on which continent?',choices:['North America','South America','Europe','Asia'],answer:'North America',explain:'The USA is in North America.'},
+  {q:'Which is the biggest ocean?',choices:['Pacific','Atlantic','Indian','Arctic'],answer:'Pacific',explain:'The Pacific is the largest ocean.'},
+  {q:'Which two states are NOT connected to the others?',choices:['Alaska & Hawaii','Texas & Florida','California & Oregon','Maine & Ohio'],answer:'Alaska & Hawaii',explain:'Alaska and Hawaii are separated from the other 48 states.'}
+];
+function mapsGen(){const r=Math.random();if(r<0.35)return qStateCapital();if(r<0.6)return qCapitalState();if(r<0.78)return qContinent();return pick(MAP_READING);}
+function startMapsChallenge(){runEndless(mapsGen,'🗺️ Maps Challenge','learnHome');}
 
 /* ---- Science question bank + templates (unlimited) ---- */
 const MATTER_ITEMS=[['ice','Solid'],['a rock','Solid'],['a chair','Solid'],['wood','Solid'],['a book','Solid'],['water','Liquid'],['milk','Liquid'],['juice','Liquid'],['oil','Liquid'],['air','Gas'],['steam','Gas'],['oxygen','Gas']];
