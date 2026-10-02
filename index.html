@@ -174,7 +174,7 @@
     <div class="card">
       <div class="toolbar">
         <button class="link" id="qzBackBtn">&larr; Back</button>
-        <div class="right"><span class="progress-badge" id="qzProg">1 / 5</span><span class="lvbadge" id="qzScore">⭐ 0</span></div>
+        <div class="right"><button class="pill hidden" id="qzFinishBtn" onclick="qzFinish()">Finish ✓</button><span class="progress-badge" id="qzProg">1 / 5</span><span class="lvbadge" id="qzScore">⭐ 0</span></div>
       </div>
       <div class="question" id="qzQ"></div>
       <div class="visual" id="qzVisual"></div>
@@ -206,6 +206,7 @@
         <button class="topic" onclick="startSnake()"><div class="ic">🐍</div><div class="tn">Snakes &amp; Ladders</div><div class="lv">1–100, beat the robot</div></button>
         <button class="topic" onclick="startCapitalQuiz()"><div class="ic">🏙️</div><div class="tn">Capital Quiz</div><div class="lv">Name the capital city</div></button>
         <button class="topic" onclick="startFlagQuiz()"><div class="ic">🚩</div><div class="tn">Flag Quiz</div><div class="lv">Which country's flag?</div></button>
+        <button class="topic" onclick="startGeoChallenge()"><div class="ic">🌍</div><div class="tn">Geography Challenge</div><div class="lv">Unlimited mixed questions</div></button>
         <button class="topic" onclick="startCapitalMatch()"><div class="ic">🔗</div><div class="tn">Capital Match</div><div class="lv">Match country → capital</div></button>
       </div>
     </div>
@@ -970,68 +971,152 @@ const READINGS={
     ]}
 };
 
-/* ---- GK quizzes (no reading) ---- */
-const GKQUIZZES={
-  gkAnimals:{icon:'🐾',title:'Animal Facts',cat:'GK Quiz',quiz:[
-    {q:'Which animal is the <b>largest</b> on Earth?',choices:['Blue whale','Elephant','Giraffe','Shark'],answer:'Blue whale',explain:'The blue whale is the largest animal ever known.'},
-    {q:'A baby dog is called a…',choices:['Puppy','Kitten','Calf','Cub'],answer:'Puppy',explain:'A baby dog is a puppy.'},
-    {q:'Which animal is known as the "King of the Jungle"?',choices:['Lion','Tiger','Bear','Wolf'],answer:'Lion',explain:'The lion is called the King of the Jungle.'},
-    {q:'How many legs does an insect have?',choices:['6','8','4','10'],answer:'6',explain:'All insects have 6 legs.'},
-    {q:'Which animal can change its color to hide?',choices:['Chameleon','Horse','Cow','Duck'],answer:'Chameleon',explain:'Chameleons change color to blend in.'},
-    {q:'Which of these is a <b>mammal</b>?',choices:['Whale','Shark','Frog','Snake'],answer:'Whale',explain:'A whale is a mammal — it breathes air and feeds milk to its young.'}
-  ]},
-  gkBody:{icon:'🧠',title:'The Human Body',cat:'GK Quiz',quiz:[
-    {q:'Which organ pumps blood around your body?',choices:['Heart','Brain','Lungs','Stomach'],answer:'Heart',explain:'The heart pumps blood all over the body.'},
-    {q:'Which body part helps you <b>breathe</b>?',choices:['Lungs','Liver','Bones','Skin'],answer:'Lungs',explain:'Your lungs take in air so you can breathe.'},
-    {q:'What is the hard frame inside your body called?',choices:['Skeleton','Muscle','Skin','Blood'],answer:'Skeleton',explain:'The skeleton (your bones) holds you up.'},
-    {q:'Which organ helps you think?',choices:['Brain','Heart','Stomach','Foot'],answer:'Brain',explain:'The brain controls thinking and the whole body.'},
-    {q:'How many senses do humans have?',choices:['5','3','7','2'],answer:'5',explain:'Sight, hearing, smell, taste, and touch — 5 senses.'},
-    {q:'Which part helps you <b>digest</b> food?',choices:['Stomach','Lungs','Ears','Eyes'],answer:'Stomach',explain:'The stomach helps break down the food you eat.'}
-  ]},
-  gkMixed:{icon:'🌟',title:'Fun General Knowledge',cat:'GK Quiz',quiz:[
-    {q:'How many days are in a week?',choices:['7','5','10','12'],answer:'7',explain:'There are 7 days in a week.'},
-    {q:'How many colors are in a rainbow?',choices:['7','5','3','10'],answer:'7',explain:'A rainbow has 7 colors (ROYGBIV).'},
-    {q:'What do bees make?',choices:['Honey','Milk','Bread','Silk'],answer:'Honey',explain:'Bees make honey.'},
-    {q:'Which season comes after winter?',choices:['Spring','Summer','Fall','Monsoon'],answer:'Spring',explain:'Spring comes right after winter.'},
-    {q:'How many months are in a year?',choices:['12','10','7','24'],answer:'12',explain:'There are 12 months in a year.'},
-    {q:'What shape has 3 sides?',choices:['Triangle','Square','Circle','Pentagon'],answer:'Triangle',explain:'A triangle has 3 sides.'},
-    {q:'Which is the fastest land animal?',choices:['Cheetah','Lion','Horse','Dog'],answer:'Cheetah',explain:'The cheetah is the fastest land animal.'}
-  ]}
+/* ---- Learn grid: readings + UNLIMITED challenge quizzes ---- */
+const CHALLENGES={
+  sciChallenge:{icon:'🔬',title:'Science Challenge',cat:'Unlimited Quiz',gen:()=>sciGen()},
+  geoChallenge:{icon:'🌍',title:'Geography Challenge',cat:'Unlimited Quiz',gen:()=>geoGen()},
+  gkChallenge:{icon:'🧠',title:'GK Challenge',cat:'Unlimited Quiz',gen:()=>gkGen()}
 };
-const LEARN_ORDER=['maps','continents','soil','resources','matter','energy','forces','landforms','solar','water','ecosystems','community','gkAnimals','gkBody','gkMixed'];
-function buildLearnGrid(){const g=$('learnGrid');g.innerHTML='';LEARN_ORDER.forEach(id=>{const it=READINGS[id]||GKQUIZZES[id];const el=document.createElement('button');el.className='topic';el.innerHTML=`<div class="ic">${it.icon}</div><div class="tn">${it.title}</div><div class="lv">${it.cat}</div>`;el.onclick=()=>openLearn(id);g.appendChild(el);});}
+const LEARN_ORDER=['maps','continents','soil','resources','matter','energy','forces','landforms','solar','water','ecosystems','community','sciChallenge','geoChallenge','gkChallenge'];
+function buildLearnGrid(){const g=$('learnGrid');g.innerHTML='';LEARN_ORDER.forEach(id=>{const it=READINGS[id]||CHALLENGES[id];const el=document.createElement('button');el.className='topic';el.innerHTML=`<div class="ic">${it.icon}</div><div class="tn">${it.title}</div><div class="lv">${it.cat}</div>`;el.onclick=()=>openLearn(id);g.appendChild(el);});}
 let curLearn=null;
-function openLearn(id){if(READINGS[id]){const r=READINGS[id];curLearn=id;$('readTitle').textContent=r.icon+' '+r.title;$('readBody').innerHTML=r.body;show('reading');}else{const q=GKQUIZZES[id];runQuiz(q.quiz,q.icon+' '+q.title,'learnHome');}}
+function openLearn(id){if(READINGS[id]){const r=READINGS[id];curLearn=id;$('readTitle').textContent=r.icon+' '+r.title;$('readBody').innerHTML=r.body;show('reading');}else if(CHALLENGES[id]){const c=CHALLENGES[id];runEndless(c.gen,c.icon+' '+c.title,'learnHome');}}
 function startReadingQuiz(){const r=READINGS[curLearn];runQuiz(r.quiz,r.icon+' '+r.title+' — Quiz','reading');}
 
-/* ---- Generic quiz engine ---- */
-let QZ={list:[],i:0,score:0,title:'',back:'learnHome',answered:false};
-function runQuiz(questions,title,backView){QZ={list:shuffle(questions.slice()),i:0,score:0,title,back:backView,answered:false};$('qzBackBtn').onclick=()=>show(backView);show('quiz');qzRender();}
-function qzRender(){QZ.answered=false;$('qzFb').classList.remove('show');const q=QZ.list[QZ.i];$('qzProg').textContent=(QZ.i+1)+' / '+QZ.list.length;$('qzScore').textContent='⭐ '+QZ.score;$('qzQ').innerHTML=q.q;$('qzVisual').innerHTML=q.visual||'';const box=$('qzChoices');box.innerHTML='';shuffle(q.choices.slice()).forEach(c=>{const b=document.createElement('button');b.className='choice';b.innerHTML=c;b.onclick=()=>qzAnswer(b,c,q);box.appendChild(b);});}
-function qzAnswer(btn,val,q){if(QZ.answered)return;QZ.answered=true;document.querySelectorAll('#qzChoices .choice').forEach(b=>{b.disabled=true;if(b.innerHTML===q.answer)b.classList.add('correct');});const fb=$('qzFb');fb.classList.remove('neutral');if(val===q.answer){QZ.score++;PROG.stars++;save();refreshStats();$('qzFT').textContent='✅ Correct! +1 star';}else{btn.classList.add('wrong');fb.classList.add('neutral');$('qzFT').textContent='Not quite 🤔';}$('qzScore').textContent='⭐ '+QZ.score;$('qzEx').innerHTML=q.explain||'';fb.classList.add('show');}
-function qzNext(){QZ.i++;if(QZ.i>=QZ.list.length){qzFinish();return;}qzRender();}
-function qzFinish(){const n=QZ.list.length;$('qrTitle').textContent=QZ.title;$('qrNum').textContent=QZ.score+' / '+n;const pct=QZ.score/n;$('qrMsg').textContent=pct>=0.9?'Outstanding! 🌟':pct>=0.7?'Great job! 👏':pct>=0.5?'Good effort — try again to beat it! 🌱':'Read it again and give it another go! 💛';$('qrAgain').onclick=()=>{QZ.list=shuffle(QZ.list);QZ.i=0;QZ.score=0;show('quiz');qzRender();};$('qrBack').onclick=()=>show(QZ.back);show('quizResult');}
+/* ---- Generic quiz engine (fixed OR endless/unlimited) ---- */
+let QZ={mode:'fixed',list:[],gen:null,i:0,score:0,att:0,title:'',back:'learnHome',answered:false,cur:null,recent:[]};
+function qzSetup(back){$('qzBackBtn').onclick=()=>show(back);$('qzFinishBtn').classList.toggle('hidden',QZ.mode!=='endless');show('quiz');qzRender();}
+function runQuiz(questions,title,backView){QZ={mode:'fixed',list:shuffle(questions.slice()),gen:null,i:0,score:0,att:0,title,back:backView,answered:false,cur:null,recent:[]};qzSetup(backView);}
+function runEndless(genFn,title,backView){QZ={mode:'endless',list:[],gen:genFn,i:0,score:0,att:0,title,back:backView,answered:false,cur:null,recent:[]};qzSetup(backView);}
+function qzRender(){QZ.answered=false;$('qzFb').classList.remove('show');let q;
+  if(QZ.mode==='endless'){q=QZ.gen();let g=0;while(QZ.recent.includes(q.q)&&g<10){q=QZ.gen();g++;}QZ.recent.push(q.q);if(QZ.recent.length>12)QZ.recent.shift();$('qzProg').textContent='Q '+(QZ.i+1);}
+  else{q=QZ.list[QZ.i];$('qzProg').textContent=(QZ.i+1)+' / '+QZ.list.length;}
+  QZ.cur=q;$('qzScore').textContent='⭐ '+QZ.score;$('qzQ').innerHTML=q.q;$('qzVisual').innerHTML=q.visual||'';
+  const box=$('qzChoices');box.innerHTML='';shuffle(q.choices.slice()).forEach(c=>{const b=document.createElement('button');b.className='choice';b.innerHTML=c;b.onclick=()=>qzAnswer(b,c,q);box.appendChild(b);});}
+function qzAnswer(btn,val,q){if(QZ.answered)return;QZ.answered=true;QZ.att++;document.querySelectorAll('#qzChoices .choice').forEach(b=>{b.disabled=true;if(b.innerHTML===q.answer)b.classList.add('correct');});const fb=$('qzFb');fb.classList.remove('neutral');if(val===q.answer){QZ.score++;PROG.stars++;save();refreshStats();$('qzFT').textContent='✅ Correct! +1 star';}else{btn.classList.add('wrong');fb.classList.add('neutral');$('qzFT').textContent='Not quite 🤔';}$('qzScore').textContent='⭐ '+QZ.score;$('qzEx').innerHTML=q.explain||'';fb.classList.add('show');}
+function qzNext(){QZ.i++;if(QZ.mode==='fixed'&&QZ.i>=QZ.list.length){qzFinish();return;}qzRender();}
+function qzFinish(){const total=QZ.mode==='endless'?QZ.att:QZ.list.length;$('qrTitle').textContent=QZ.title;$('qrNum').textContent=QZ.score+' / '+total;const pct=total?QZ.score/total:0;$('qrMsg').textContent=pct>=0.9?'Outstanding! 🌟':pct>=0.7?'Great job! 👏':pct>=0.5?'Good effort — try again! 🌱':'Keep practicing — you\'ve got this! 💛';$('qrAgain').onclick=()=>{if(QZ.mode==='endless')runEndless(QZ.gen,QZ.title,QZ.back);else{QZ.list=shuffle(QZ.list);QZ.i=0;QZ.score=0;QZ.att=0;show('quiz');qzRender();}};$('qrBack').onclick=()=>show(QZ.back);show('quizResult');}
 
-/* ---- Countries data ---- */
+/* ---- Countries data (50, with continents) ---- */
 const COUNTRIES=[
-  {n:'United States',cap:'Washington, D.C.',flag:'🇺🇸'},{n:'United Kingdom',cap:'London',flag:'🇬🇧'},
-  {n:'France',cap:'Paris',flag:'🇫🇷'},{n:'India',cap:'New Delhi',flag:'🇮🇳'},
-  {n:'Japan',cap:'Tokyo',flag:'🇯🇵'},{n:'China',cap:'Beijing',flag:'🇨🇳'},
-  {n:'Germany',cap:'Berlin',flag:'🇩🇪'},{n:'Italy',cap:'Rome',flag:'🇮🇹'},
-  {n:'Brazil',cap:'Brasília',flag:'🇧🇷'},{n:'Canada',cap:'Ottawa',flag:'🇨🇦'},
-  {n:'Australia',cap:'Canberra',flag:'🇦🇺'},{n:'Russia',cap:'Moscow',flag:'🇷🇺'},
-  {n:'Spain',cap:'Madrid',flag:'🇪🇸'},{n:'Mexico',cap:'Mexico City',flag:'🇲🇽'},
-  {n:'Egypt',cap:'Cairo',flag:'🇪🇬'},{n:'South Africa',cap:'Pretoria',flag:'🇿🇦'},
-  {n:'South Korea',cap:'Seoul',flag:'🇰🇷'},{n:'Argentina',cap:'Buenos Aires',flag:'🇦🇷'},
-  {n:'Greece',cap:'Athens',flag:'🇬🇷'},{n:'Portugal',cap:'Lisbon',flag:'🇵🇹'},
-  {n:'Netherlands',cap:'Amsterdam',flag:'🇳🇱'},{n:'Sweden',cap:'Stockholm',flag:'🇸🇪'},
-  {n:'Norway',cap:'Oslo',flag:'🇳🇴'},{n:'Switzerland',cap:'Bern',flag:'🇨🇭'},
-  {n:'Kenya',cap:'Nairobi',flag:'🇰🇪'},{n:'Nigeria',cap:'Abuja',flag:'🇳🇬'},
-  {n:'Thailand',cap:'Bangkok',flag:'🇹🇭'},{n:'Turkey',cap:'Ankara',flag:'🇹🇷'},
-  {n:'Saudi Arabia',cap:'Riyadh',flag:'🇸🇦'},{n:'Indonesia',cap:'Jakarta',flag:'🇮🇩'}
+  {n:'United States',cap:'Washington, D.C.',flag:'🇺🇸',cont:'North America'},{n:'United Kingdom',cap:'London',flag:'🇬🇧',cont:'Europe'},
+  {n:'France',cap:'Paris',flag:'🇫🇷',cont:'Europe'},{n:'India',cap:'New Delhi',flag:'🇮🇳',cont:'Asia'},
+  {n:'Japan',cap:'Tokyo',flag:'🇯🇵',cont:'Asia'},{n:'China',cap:'Beijing',flag:'🇨🇳',cont:'Asia'},
+  {n:'Germany',cap:'Berlin',flag:'🇩🇪',cont:'Europe'},{n:'Italy',cap:'Rome',flag:'🇮🇹',cont:'Europe'},
+  {n:'Brazil',cap:'Brasília',flag:'🇧🇷',cont:'South America'},{n:'Canada',cap:'Ottawa',flag:'🇨🇦',cont:'North America'},
+  {n:'Australia',cap:'Canberra',flag:'🇦🇺',cont:'Australia'},{n:'Russia',cap:'Moscow',flag:'🇷🇺',cont:'Europe'},
+  {n:'Spain',cap:'Madrid',flag:'🇪🇸',cont:'Europe'},{n:'Mexico',cap:'Mexico City',flag:'🇲🇽',cont:'North America'},
+  {n:'Egypt',cap:'Cairo',flag:'🇪🇬',cont:'Africa'},{n:'South Africa',cap:'Pretoria',flag:'🇿🇦',cont:'Africa'},
+  {n:'South Korea',cap:'Seoul',flag:'🇰🇷',cont:'Asia'},{n:'Argentina',cap:'Buenos Aires',flag:'🇦🇷',cont:'South America'},
+  {n:'Greece',cap:'Athens',flag:'🇬🇷',cont:'Europe'},{n:'Portugal',cap:'Lisbon',flag:'🇵🇹',cont:'Europe'},
+  {n:'Netherlands',cap:'Amsterdam',flag:'🇳🇱',cont:'Europe'},{n:'Sweden',cap:'Stockholm',flag:'🇸🇪',cont:'Europe'},
+  {n:'Norway',cap:'Oslo',flag:'🇳🇴',cont:'Europe'},{n:'Switzerland',cap:'Bern',flag:'🇨🇭',cont:'Europe'},
+  {n:'Kenya',cap:'Nairobi',flag:'🇰🇪',cont:'Africa'},{n:'Nigeria',cap:'Abuja',flag:'🇳🇬',cont:'Africa'},
+  {n:'Thailand',cap:'Bangkok',flag:'🇹🇭',cont:'Asia'},{n:'Turkey',cap:'Ankara',flag:'🇹🇷',cont:'Asia'},
+  {n:'Saudi Arabia',cap:'Riyadh',flag:'🇸🇦',cont:'Asia'},{n:'Indonesia',cap:'Jakarta',flag:'🇮🇩',cont:'Asia'},
+  {n:'Peru',cap:'Lima',flag:'🇵🇪',cont:'South America'},{n:'Chile',cap:'Santiago',flag:'🇨🇱',cont:'South America'},
+  {n:'Colombia',cap:'Bogotá',flag:'🇨🇴',cont:'South America'},{n:'Cuba',cap:'Havana',flag:'🇨🇺',cont:'North America'},
+  {n:'Ireland',cap:'Dublin',flag:'🇮🇪',cont:'Europe'},{n:'Poland',cap:'Warsaw',flag:'🇵🇱',cont:'Europe'},
+  {n:'Austria',cap:'Vienna',flag:'🇦🇹',cont:'Europe'},{n:'Belgium',cap:'Brussels',flag:'🇧🇪',cont:'Europe'},
+  {n:'Denmark',cap:'Copenhagen',flag:'🇩🇰',cont:'Europe'},{n:'Finland',cap:'Helsinki',flag:'🇫🇮',cont:'Europe'},
+  {n:'Morocco',cap:'Rabat',flag:'🇲🇦',cont:'Africa'},{n:'Ghana',cap:'Accra',flag:'🇬🇭',cont:'Africa'},
+  {n:'Ethiopia',cap:'Addis Ababa',flag:'🇪🇹',cont:'Africa'},{n:'Vietnam',cap:'Hanoi',flag:'🇻🇳',cont:'Asia'},
+  {n:'Philippines',cap:'Manila',flag:'🇵🇭',cont:'Asia'},{n:'Malaysia',cap:'Kuala Lumpur',flag:'🇲🇾',cont:'Asia'},
+  {n:'Pakistan',cap:'Islamabad',flag:'🇵🇰',cont:'Asia'},{n:'Bangladesh',cap:'Dhaka',flag:'🇧🇩',cont:'Asia'},
+  {n:'Iran',cap:'Tehran',flag:'🇮🇷',cont:'Asia'},{n:'Iraq',cap:'Baghdad',flag:'🇮🇶',cont:'Asia'}
 ];
-function startCapitalQuiz(){const cs=shuffle(COUNTRIES).slice(0,8);const qs=cs.map(c=>{const wrong=shuffle(COUNTRIES.filter(x=>x.cap!==c.cap)).slice(0,3).map(x=>x.cap);return{q:`What is the capital of <b>${c.n}</b>? ${c.flag}`,choices:shuffle([c.cap,...wrong]),answer:c.cap,explain:`The capital of ${c.n} is <b>${c.cap}</b>.`};});runQuiz(qs,'🏙️ Capital Quiz','gamesHome');}
-function startFlagQuiz(){const cs=shuffle(COUNTRIES).slice(0,8);const qs=cs.map(c=>{const wrong=shuffle(COUNTRIES.filter(x=>x.n!==c.n)).slice(0,3).map(x=>x.n);return{q:'Which country has this flag?',visual:`<div class="flag-big">${c.flag}</div>`,choices:shuffle([c.n,...wrong]),answer:c.n,explain:`That's the flag of <b>${c.n}</b> — capital ${c.cap}.`};});runQuiz(qs,'🚩 Flag Quiz','gamesHome');}
+const CONTINENTS=['Asia','Africa','Europe','North America','South America','Australia'];
+/* ---- Geography question templates (unlimited) ---- */
+function qCapital(){const c=pick(COUNTRIES);const w=shuffle(COUNTRIES.filter(x=>x.cap!==c.cap)).slice(0,3).map(x=>x.cap);return{q:`What is the capital of <b>${c.n}</b>? ${c.flag}`,choices:shuffle([c.cap,...w]),answer:c.cap,explain:`The capital of ${c.n} is <b>${c.cap}</b>.`};}
+function qCountryOfCap(){const c=pick(COUNTRIES);const w=shuffle(COUNTRIES.filter(x=>x.n!==c.n)).slice(0,3).map(x=>x.n);return{q:`<b>${c.cap}</b> is the capital of which country?`,choices:shuffle([c.n,...w]),answer:c.n,explain:`${c.cap} is the capital of <b>${c.n}</b>.`};}
+function qFlag(){const c=pick(COUNTRIES);const w=shuffle(COUNTRIES.filter(x=>x.n!==c.n)).slice(0,3).map(x=>x.n);return{q:'Which country has this flag?',visual:`<div class="flag-big">${c.flag}</div>`,choices:shuffle([c.n,...w]),answer:c.n,explain:`That's the flag of <b>${c.n}</b> — capital ${c.cap}.`};}
+function qContinent(){const c=pick(COUNTRIES);const w=shuffle(CONTINENTS.filter(x=>x!==c.cont)).slice(0,3);return{q:`Which continent is <b>${c.n}</b> ${c.flag} in?`,choices:shuffle([c.cont,...w]),answer:c.cont,explain:`${c.n} is in <b>${c.cont}</b>.`};}
+const GEO_FACTS=[
+  {q:'Which is the largest continent?',choices:['Asia','Africa','Europe','Australia'],answer:'Asia',explain:'Asia is the largest continent.'},
+  {q:'Which is the smallest continent?',choices:['Australia','Europe','Asia','Africa'],answer:'Australia',explain:'Australia is the smallest continent.'},
+  {q:'Which is the largest ocean?',choices:['Pacific','Atlantic','Indian','Arctic'],answer:'Pacific',explain:'The Pacific is the largest ocean.'},
+  {q:'How many continents are there?',choices:['7','5','6','8'],answer:'7',explain:'There are 7 continents.'},
+  {q:'How many oceans are there?',choices:['5','4','3','7'],answer:'5',explain:'There are 5 oceans.'},
+  {q:'Which continent is covered in ice at the South Pole?',choices:['Antarctica','Africa','Europe','Asia'],answer:'Antarctica',explain:'Antarctica is icy and cold.'},
+  {q:'The longest river in the world is the…',choices:['Nile','Amazon','Mississippi','Ganges'],answer:'Nile',explain:'The Nile is usually counted as the longest river.'},
+  {q:'The largest desert (hot) is the…',choices:['Sahara','Gobi','Thar','Mojave'],answer:'Sahara',explain:'The Sahara in Africa is the largest hot desert.'},
+  {q:'The tallest mountain on Earth is…',choices:['Mount Everest','K2','Kilimanjaro','Alps'],answer:'Mount Everest',explain:'Mount Everest is the tallest.'}
+];
+function geoGen(){const r=Math.random();if(r<0.28)return qCapital();if(r<0.5)return qCountryOfCap();if(r<0.68)return qFlag();if(r<0.86)return qContinent();return pick(GEO_FACTS);}
+function startCapitalQuiz(){runEndless(()=>Math.random()<0.5?qCapital():qCountryOfCap(),'🏙️ Capital Quiz','gamesHome');}
+function startFlagQuiz(){runEndless(qFlag,'🚩 Flag Quiz','gamesHome');}
+function startGeoChallenge(){runEndless(geoGen,'🌍 Geography Challenge','gamesHome');}
+
+/* ---- Science question bank + templates (unlimited) ---- */
+const MATTER_ITEMS=[['ice','Solid'],['a rock','Solid'],['a chair','Solid'],['wood','Solid'],['a book','Solid'],['water','Liquid'],['milk','Liquid'],['juice','Liquid'],['oil','Liquid'],['air','Gas'],['steam','Gas'],['oxygen','Gas']];
+function qMatter(){const it=pick(MATTER_ITEMS);return{q:`Which state of matter is <b>${it[0]}</b>?`,choices:['Solid','Liquid','Gas'],answer:it[1],explain:`${it[0]} is a ${it[1].toLowerCase()}.`};}
+const RESOURCES=[['Sunlight','Renewable'],['Wind','Renewable'],['Water','Renewable'],['Trees','Renewable'],['Coal','Nonrenewable'],['Oil','Nonrenewable'],['Natural gas','Nonrenewable']];
+function qResource(){const it=pick(RESOURCES);return{q:`Is <b>${it[0]}</b> renewable or nonrenewable?`,choices:['Renewable','Nonrenewable'],answer:it[1],explain:`${it[0]} is ${it[1].toLowerCase()}.`};}
+const PLANETS=['Mercury','Venus','Earth','Mars','Jupiter','Saturn','Uranus','Neptune'];
+function qPlanetOrder(){const i=rand(0,7);const w=shuffle(PLANETS.filter(p=>p!==PLANETS[i])).slice(0,3);return{q:`Counting from the Sun, which planet is number <b>${i+1}</b>?`,choices:shuffle([PLANETS[i],...w]),answer:PLANETS[i],explain:`Planet #${i+1} from the Sun is ${PLANETS[i]}. (Order: ${PLANETS.join(', ')}.)`};}
+const SCIENCE_FACTS=[
+  {q:'The slow breaking of rock into tiny pieces is called…',choices:['Weathering','Melting','Freezing','Planting'],answer:'Weathering',explain:'Weathering breaks rock down over time.'},
+  {q:'Humus in soil is made of…',choices:['Rotted plants and animals','Melted ice','Pure sand','Plastic'],answer:'Rotted plants and animals',explain:'Humus is rotted once-living matter.'},
+  {q:'Which soil layer is best for growing plants?',choices:['Topsoil','Bedrock','Subsoil','Clay'],answer:'Topsoil',explain:'Topsoil is rich in humus.'},
+  {q:'The force that pulls things toward Earth is…',choices:['Gravity','Friction','Magnetism','Sound'],answer:'Gravity',explain:'Gravity pulls objects down.'},
+  {q:'A force that slows things when surfaces rub is…',choices:['Friction','Gravity','Light','Sound'],answer:'Friction',explain:'Friction slows motion.'},
+  {q:'A force is a…',choices:['Push or pull','Color','Sound','Shape'],answer:'Push or pull',explain:'Every force is a push or a pull.'},
+  {q:'Earth\'s main source of light and heat is the…',choices:['Sun','Moon','Wind','Rain'],answer:'Sun',explain:'The Sun gives light and heat.'},
+  {q:'What do we call energy we can hear?',choices:['Sound','Light','Heat','Soil'],answer:'Sound',explain:'Sound energy is heard.'},
+  {q:'Water turning into vapor and rising is…',choices:['Evaporation','Condensation','Precipitation','Collection'],answer:'Evaporation',explain:'Evaporation makes vapor.'},
+  {q:'Clouds form during…',choices:['Condensation','Evaporation','Collection','Freezing'],answer:'Condensation',explain:'Condensation forms cloud droplets.'},
+  {q:'Rain, snow, and hail are all…',choices:['Precipitation','Evaporation','Clouds','Vapor'],answer:'Precipitation',explain:'They fall from clouds as precipitation.'},
+  {q:'Plants that make their own food are…',choices:['Producers','Consumers','Decomposers','Hunters'],answer:'Producers',explain:'Producers make food with sunlight.'},
+  {q:'Animals that eat other living things are…',choices:['Consumers','Producers','Rocks','Clouds'],answer:'Consumers',explain:'Consumers eat other living things.'},
+  {q:'A worm that breaks down dead leaves is a…',choices:['Decomposer','Producer','Planet','Star'],answer:'Decomposer',explain:'Decomposers recycle nutrients.'},
+  {q:'Which planet is the biggest?',choices:['Jupiter','Earth','Mars','Mercury'],answer:'Jupiter',explain:'Jupiter is the largest planet.'},
+  {q:'Which planet is the Red Planet?',choices:['Mars','Saturn','Venus','Neptune'],answer:'Mars',explain:'Mars looks red.'},
+  {q:'Which planet has beautiful rings?',choices:['Saturn','Earth','Mercury','Venus'],answer:'Saturn',explain:'Saturn is famous for its rings.'},
+  {q:'How many planets orbit the Sun?',choices:['8','9','7','10'],answer:'8',explain:'There are 8 planets.'},
+  {q:'Boiling water turns into…',choices:['Steam (gas)','Ice','Rock','Soil'],answer:'Steam (gas)',explain:'Boiling makes steam.'},
+  {q:'When water gets very cold it…',choices:['Freezes into ice','Boils','Evaporates','Disappears'],answer:'Freezes into ice',explain:'Cold freezes water into ice.'},
+  {q:'Which is a fast change to Earth\'s surface?',choices:['Earthquake','Soil forming','River carving slowly','Rock weathering'],answer:'Earthquake',explain:'Earthquakes change land quickly.'},
+  {q:'Wide, flat land is called a…',choices:['Plain','Mountain','Valley','Plateau'],answer:'Plain',explain:'A plain is wide and flat.'},
+  {q:'Low land between hills is a…',choices:['Valley','Plateau','Plain','Peak'],answer:'Valley',explain:'A valley sits between hills.'},
+  {q:'Which is NOT a natural resource?',choices:['A plastic toy','Water','Trees','Soil'],answer:'A plastic toy',explain:'Plastic toys are made by people.'},
+  {q:'The 3 R\'s that protect resources are…',choices:['Reduce, Reuse, Recycle','Run, Rest, Repeat','Read, Write, Rest','Rain, River, Rock'],answer:'Reduce, Reuse, Recycle',explain:'Reduce, Reuse, Recycle.'}
+];
+function sciGen(){const r=Math.random();if(r<0.22)return qMatter();if(r<0.4)return qResource();if(r<0.55)return qPlanetOrder();return pick(SCIENCE_FACTS);}
+function startSciChallenge(){runEndless(sciGen,'🔬 Science Challenge','learnHome');}
+
+/* ---- GK question bank + templates (unlimited) ---- */
+const SHAPE_SIDES=[['triangle',3],['square',4],['rectangle',4],['pentagon',5],['hexagon',6],['octagon',8]];
+function qShape(){const s=pick(SHAPE_SIDES);const w=shuffle([3,4,5,6,7,8].filter(x=>x!==s[1])).slice(0,3);return{q:`How many sides does a <b>${s[0]}</b> have?`,choices:shuffle([s[1],...w].map(S)),answer:S(s[1]),explain:`A ${s[0]} has ${s[1]} sides.`};}
+const BABY_ANIMALS=[['dog','Puppy'],['cat','Kitten'],['cow','Calf'],['horse','Foal'],['sheep','Lamb'],['bear','Cub'],['frog','Tadpole'],['kangaroo','Joey']];
+function qBaby(){const a=pick(BABY_ANIMALS);const all=BABY_ANIMALS.map(x=>x[1]);const w=shuffle(all.filter(x=>x!==a[1])).slice(0,3);return{q:`What is a baby <b>${a[0]}</b> called?`,choices:shuffle([a[1],...w]),answer:a[1],explain:`A baby ${a[0]} is a ${a[1].toLowerCase()}.`};}
+const GK_FACTS=[
+  {q:'How many days are in a week?',choices:['7','5','10','12'],answer:'7',explain:'7 days in a week.'},
+  {q:'How many months are in a year?',choices:['12','10','7','24'],answer:'12',explain:'12 months.'},
+  {q:'How many colors are in a rainbow?',choices:['7','5','3','10'],answer:'7',explain:'7 colors (ROYGBIV).'},
+  {q:'What do bees make?',choices:['Honey','Milk','Bread','Silk'],answer:'Honey',explain:'Bees make honey.'},
+  {q:'Which season comes after winter?',choices:['Spring','Summer','Fall','Monsoon'],answer:'Spring',explain:'Spring follows winter.'},
+  {q:'The largest animal on Earth is the…',choices:['Blue whale','Elephant','Giraffe','Shark'],answer:'Blue whale',explain:'The blue whale is the largest.'},
+  {q:'The fastest land animal is the…',choices:['Cheetah','Lion','Horse','Dog'],answer:'Cheetah',explain:'The cheetah is fastest on land.'},
+  {q:'The "King of the Jungle" is the…',choices:['Lion','Tiger','Bear','Wolf'],answer:'Lion',explain:'The lion.'},
+  {q:'How many legs does an insect have?',choices:['6','8','4','10'],answer:'6',explain:'Insects have 6 legs.'},
+  {q:'How many legs does a spider have?',choices:['8','6','10','4'],answer:'8',explain:'Spiders have 8 legs.'},
+  {q:'Which animal can change color to hide?',choices:['Chameleon','Horse','Cow','Duck'],answer:'Chameleon',explain:'Chameleons change color.'},
+  {q:'Which organ pumps blood?',choices:['Heart','Brain','Lungs','Stomach'],answer:'Heart',explain:'The heart pumps blood.'},
+  {q:'Which organ helps you breathe?',choices:['Lungs','Liver','Bones','Skin'],answer:'Lungs',explain:'Lungs help you breathe.'},
+  {q:'Which organ helps you think?',choices:['Brain','Heart','Stomach','Foot'],answer:'Brain',explain:'The brain controls thinking.'},
+  {q:'The bones in your body make up your…',choices:['Skeleton','Muscle','Skin','Blood'],answer:'Skeleton',explain:'Bones form the skeleton.'},
+  {q:'How many senses do humans have?',choices:['5','3','7','2'],answer:'5',explain:'Sight, hearing, smell, taste, touch.'},
+  {q:'How many hours are in a day?',choices:['24','12','10','60'],answer:'24',explain:'24 hours in a day.'},
+  {q:'How many minutes are in an hour?',choices:['60','30','100','24'],answer:'60',explain:'60 minutes in an hour.'},
+  {q:'Water freezes into…',choices:['Ice','Steam','Cloud','Sand'],answer:'Ice',explain:'Cold water freezes to ice.'},
+  {q:'A shape with no corners is a…',choices:['Circle','Square','Triangle','Pentagon'],answer:'Circle',explain:'A circle has no corners.'},
+  {q:'Which is a mammal?',choices:['Whale','Shark','Frog','Snake'],answer:'Whale',explain:'A whale is a mammal.'},
+  {q:'Which gives us light in the daytime?',choices:['The Sun','The Moon','Stars','Lamps'],answer:'The Sun',explain:'The Sun lights the day.'},
+  {q:'A group of wolves is called a…',choices:['Pack','Herd','School','Flock'],answer:'Pack',explain:'Wolves live in a pack.'},
+  {q:'A baby butterfly starts as a…',choices:['Caterpillar','Puppy','Chick','Tadpole'],answer:'Caterpillar',explain:'Butterflies begin as caterpillars.'}
+];
+function gkGen(){const r=Math.random();if(r<0.18)return qShape();if(r<0.36)return qBaby();return pick(GK_FACTS);}
+function startGKChallenge(){runEndless(gkGen,'🧠 GK Challenge','learnHome');}
 
 /* ---- Capital Match ---- */
 let matchLeft=[],matchRight=[],matchSel=null,matchDone=0;
