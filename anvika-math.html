@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Anvika's Math Practice</title>
+<title>Anvika's Learning World</title>
 <style>
   :root{
     --bg:#f4f6f8;--card:#ffffff;--ink:#33404d;--muted:#7a8794;
@@ -89,6 +89,26 @@
   .big-result .num{font-size:48px;font-weight:800;color:var(--accent);}
   .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;}
   .toast.show{opacity:1;}
+  /* Games */
+  .board-grid{display:grid;margin:10px auto;gap:2px;}
+  .sl-cell{aspect-ratio:1/1;border-radius:5px;position:relative;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .sl-cell .n{position:absolute;top:0;left:2px;font-size:8px;font-weight:700;color:#aaa;}
+  .sl-cell .tk{position:absolute;bottom:-1px;right:1px;font-size:12px;}
+  .chess-board{display:grid;grid-template-columns:repeat(8,1fr);width:min(400px,92vw);margin:10px auto;border:3px solid #33404d;border-radius:6px;overflow:hidden;}
+  .csq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:min(34px,7.4vw);cursor:pointer;user-select:none;}
+  .csq.lightsq{background:#eef1f5;}
+  .csq.darksq{background:#9db2cc;}
+  .csq.sel{background:#f6e07a !important;}
+  .csq.mv{box-shadow:inset 0 0 0 4px rgba(87,167,115,.7);}
+  .csq.chk{background:#f3a3a3 !important;}
+  .match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+  .match-col{display:flex;flex-direction:column;gap:8px;}
+  .mitem{border:2px solid var(--line);border-radius:12px;padding:12px;font-weight:600;cursor:pointer;background:#fff;font-size:15px;text-align:center;transition:.12s;}
+  .mitem.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .mitem.done{border-color:var(--good);background:var(--good-soft);color:var(--good);cursor:default;}
+  .mitem.bad{border-color:var(--bad);background:var(--bad-soft);}
+  .flag-big{font-size:96px;text-align:center;margin:6px 0 10px;}
+  .roll-btn{font-size:20px;}
   .hidden{display:none;}
   .pgraph-row{display:flex;align-items:center;gap:4px;margin:3px 0;font-size:22px;}
   .pgraph-row .lbl{width:80px;font-size:14px;font-weight:600;text-align:right;color:var(--ink);}
@@ -98,7 +118,7 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <h1>🌟 Anvika's Math</h1>
+    <h1>🌟 Anvika's World</h1>
     <div class="stats">
       <div class="stat"><div class="n" id="statStars">0</div><div class="l">Stars</div></div>
       <div class="stat"><div class="n" id="statStreak">0</div><div class="l">Streak</div></div>
@@ -106,12 +126,116 @@
     </div>
   </header>
 
-  <!-- HOME -->
-  <div id="home">
+  <!-- HUB (main menu) -->
+  <div id="hub">
     <div class="card">
-      <h2>Pick something to learn</h2>
+      <h2>What do you want to do today? 🌈</h2>
+      <p class="sub">Pick an area to explore — you earn stars everywhere!</p>
+      <div class="topic-grid">
+        <button class="topic" onclick="goHome()"><div class="ic">🧮</div><div class="tn">Math Practice</div><div class="lv">Lessons, practice & speed rounds</div></button>
+        <button class="topic" onclick="showLearn()"><div class="ic">📚</div><div class="tn">Learn &amp; Read</div><div class="lv">Science, maps &amp; GK + quizzes</div></button>
+        <button class="topic" onclick="showGames()"><div class="ic">🎮</div><div class="tn">Games &amp; Puzzles</div><div class="lv">Chess, Snakes, flags &amp; capitals</div></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATH HOME -->
+  <div id="home" class="hidden">
+    <div class="card">
+      <button class="link" onclick="goHub()">&larr; Menu</button>
+      <h2 style="margin-top:10px">🧮 Pick a math topic</h2>
       <p class="sub">Each topic starts with a short lesson, then you practice. Getting stuck is good — you'll get hints, not answers!</p>
       <div class="topic-grid" id="topicGrid"></div>
+    </div>
+  </div>
+
+  <!-- LEARN & READ HOME -->
+  <div id="learnHome" class="hidden">
+    <div class="card">
+      <button class="link" onclick="goHub()">&larr; Menu</button>
+      <h2 style="margin-top:10px">📚 Learn &amp; Read</h2>
+      <p class="sub">Read a short lesson, then take the quiz to earn stars. ⭐</p>
+      <div class="topic-grid" id="learnGrid"></div>
+    </div>
+  </div>
+
+  <!-- READING -->
+  <div id="reading" class="hidden">
+    <div class="card">
+      <button class="link" onclick="showLearn()">&larr; Back</button>
+      <h2 id="readTitle" style="margin-top:10px"></h2>
+      <div class="lesson-body" id="readBody"></div>
+      <button class="btn btn-primary btn-block" style="margin-top:16px" onclick="startReadingQuiz()">Take the Quiz →</button>
+    </div>
+  </div>
+
+  <!-- GENERIC QUIZ -->
+  <div id="quiz" class="hidden">
+    <div class="card">
+      <div class="toolbar">
+        <button class="link" id="qzBackBtn">&larr; Back</button>
+        <div class="right"><span class="progress-badge" id="qzProg">1 / 5</span><span class="lvbadge" id="qzScore">⭐ 0</span></div>
+      </div>
+      <div class="question" id="qzQ"></div>
+      <div class="visual" id="qzVisual"></div>
+      <div class="choices" id="qzChoices"></div>
+      <div class="feedback" id="qzFb"><div class="ftitle" id="qzFT"></div><div class="explain" id="qzEx"></div><button class="btn btn-primary btn-block" style="margin-top:14px" onclick="qzNext()">Next →</button></div>
+    </div>
+  </div>
+
+  <!-- QUIZ RESULT -->
+  <div id="quizResult" class="hidden">
+    <div class="card">
+      <h2 id="qrTitle" style="text-align:center"></h2>
+      <div class="big-result"><div class="num" id="qrNum">0/5</div><div style="font-size:16px;color:var(--muted)" id="qrMsg"></div></div>
+      <div class="mode-row" style="justify-content:center">
+        <button class="btn btn-primary" id="qrAgain">Try again</button>
+        <button class="btn btn-lite" id="qrBack">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAMES HOME -->
+  <div id="gamesHome" class="hidden">
+    <div class="card">
+      <button class="link" onclick="goHub()">&larr; Menu</button>
+      <h2 style="margin-top:10px">🎮 Games &amp; Puzzles</h2>
+      <p class="sub">Have fun and learn at the same time!</p>
+      <div class="topic-grid">
+        <button class="topic" onclick="startChess()"><div class="ic">♟️</div><div class="tn">Chess</div><div class="lv">Play vs the computer</div></button>
+        <button class="topic" onclick="startSnake()"><div class="ic">🐍</div><div class="tn">Snakes &amp; Ladders</div><div class="lv">1–100, beat the robot</div></button>
+        <button class="topic" onclick="startCapitalQuiz()"><div class="ic">🏙️</div><div class="tn">Capital Quiz</div><div class="lv">Name the capital city</div></button>
+        <button class="topic" onclick="startFlagQuiz()"><div class="ic">🚩</div><div class="tn">Flag Quiz</div><div class="lv">Which country's flag?</div></button>
+        <button class="topic" onclick="startCapitalMatch()"><div class="ic">🔗</div><div class="tn">Capital Match</div><div class="lv">Match country → capital</div></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SNAKES & LADDERS -->
+  <div id="snake" class="hidden">
+    <div class="card">
+      <div class="toolbar"><button class="link" onclick="showGames()">&larr; Back</button><span class="lvbadge" id="slMsg">Tap Roll 🎲</span></div>
+      <div id="slArea"></div>
+    </div>
+  </div>
+
+  <!-- CHESS -->
+  <div id="chess" class="hidden">
+    <div class="card">
+      <div class="toolbar"><button class="link" onclick="showGames()">&larr; Back</button><span class="lvbadge" id="chessMsg">Your move</span></div>
+      <div id="chessBoard"></div>
+      <div class="mode-row" style="justify-content:center;margin-top:12px">
+        <button class="btn btn-lite" onclick="startChess()">↻ New game</button>
+        <select id="chessLevel" class="btn btn-lite" style="padding:10px"><option value="2">Medium</option><option value="3" selected>Hard</option><option value="4">Tough</option></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAPITAL MATCH -->
+  <div id="match" class="hidden">
+    <div class="card">
+      <div class="toolbar"><button class="link" onclick="showGames()">&larr; Back</button><span class="lvbadge" id="matchMsg"></span></div>
+      <div id="matchArea"></div>
     </div>
   </div>
 
@@ -252,6 +376,12 @@ const LESSONS={
     <div class="strat"><b>Strategy — Break It Apart:</b> A hard fact becomes two easy ones. For 7 × 6, think 7 × 5 = 35, plus one more group of 7 → 35 + 7 = <b>42</b>.</div>
     <p>Division is multiplication <b>in reverse</b>. 24 ÷ 6 asks: <i>"6 times what equals 24?"</i></p>
     <div class="ex"><b>Fact family:</b> 6 × 4 = 24, 4 × 6 = 24, 24 ÷ 6 = 4, 24 ÷ 4 = 6. Knowing one helps you know them all!</div>`},
+  subtraction:{title:'➖ Subtraction the RSM Way',html:`
+    <p>At RSM, we almost never "borrow." Instead we <b>COUNT UP</b> — it's faster and you make far fewer mistakes.</p>
+    <div class="strat"><b>The Count-Up method:</b> To find <b>62 − 48</b>, start at the smaller number (48) and jump up to the bigger number (62). First jump to the next ten: 48 → 50 is <b>+2</b>. Then 50 → 62 is <b>+12</b>. Add the jumps: 2 + 12 = <b>14</b>.</div>
+    <div class="ex"><b>Why it's smart:</b> going up is natural (like counting change), and there is no borrowing across zeros to trip you up.</div>
+    <div class="strat"><b>Check it:</b> add your answer back to the small number — you should land on the big number. 48 + 14 = 62 ✓</div>
+    <p>Always ask: <i>"How far from the small number up to the big number?"</i></p>`},
   numberops:{title:'➕ Add & Subtract (Smart Ways)',html:`
     <p>Good mathematicians don't always line numbers up — they use <b>smart mental tricks</b>.</p>
     <div class="strat"><b>Make a friendly number:</b> 59 + 26 → push 59 up to 60 (that's +1), do 60 + 26 = 86, then give back the 1 → <b>85</b>.</div>
@@ -355,6 +485,40 @@ const GEN={
       hints:[`Equal groups → multiply. That's ${boxes} groups of ${each}.`,`Skip-count by ${each}, ${boxes} times.`],
       explain:`${boxes} groups of ${each} = ${boxes} × ${each} = <b>${boxes*each}</b> crayons.`,
       method:multMethod(boxes,each)};
+  },
+  subtraction(lv){
+    // RSM count-up only — the method/explain always teach "count up", never borrowing
+    if(lv===1){ // 2-digit − 1/2-digit with regrouping
+      let a=rand(32,99),b=rand(13,a-9);
+      return{q:`${a} − ${b} = ?`,visual:'',choices:makeNumChoices(a-b,12),answer:S(a-b),
+        hints:[`Count UP from ${b} to ${a} instead of taking away.`,`First jump up to the next ten above ${b}, then jump the rest of the way to ${a}. Add your two jumps.`],
+        explain:`Count up from ${b} to ${a}. The jumps add up to <b>${a-b}</b>. (Check: ${b} + ${a-b} = ${a}.)`,
+        method:subMethodUp(a,b)};}
+    if(lv===2){ // 3-digit − 2-digit, often across a zero
+      let a=rand(100,420),b=rand(28,99);
+      return{q:`${a} − ${b} = ?`,visual:'',choices:makeNumChoices(a-b,18),answer:S(a-b),
+        hints:[`Don't borrow — count UP from ${b} to ${a}.`,`Jump to the next ten, then the next hundred, then to ${a}. Add all the jumps.`],
+        explain:`Counting up from ${b} to ${a} gives <b>${a-b}</b>. (Check: ${b} + ${a-b} = ${a}.)`,
+        method:subMethodUp(a,b)};}
+    // lv 3: 3-digit − 3-digit and subtraction word problems
+    const kind=rand(0,2);
+    if(kind===0){let a=rand(300,900),b=rand(120,a-80);
+      return{q:`${a} − ${b} = ?`,visual:'',choices:makeNumChoices(a-b,30),answer:S(a-b),
+        hints:[`Count UP from ${b} to ${a} — no borrowing needed.`,`Jump to the next hundred, then up to ${a}. Add the jumps.`],
+        explain:`Count up from ${b} to ${a} → <b>${a-b}</b>. (Check: ${b} + ${a-b} = ${a}.)`,
+        method:subMethodUp(a,b)};}
+    if(kind===1){const big=rand(120,500),small=rand(40,big-30);
+      return{q:`There are ${big} apples and ${small} are red. How many are NOT red?`,visual:'',
+        choices:makeNumChoices(big-small,20),answer:S(big-small),
+        hints:[`"How many are left" is subtraction — but count UP from ${small} to ${big}.`,`Jump from ${small} up to ${big} and add the jumps.`],
+        explain:`Count up from ${small} to ${big}: <b>${big-small}</b> are not red.`,
+        method:subMethodUp(big,small)};}
+    const you=rand(200,700),friend=rand(60,you-40);
+    return{q:`You have ${you} stickers and your friend has ${friend}. How many MORE do you have?`,visual:'',
+      choices:makeNumChoices(you-friend,20),answer:S(you-friend),
+      hints:[`"How many more" means find the gap — count UP from ${friend} to ${you}.`,`Jump from ${friend} up to ${you}; the jumps are your answer.`],
+      explain:`The gap from ${friend} up to ${you} is <b>${you-friend}</b> more.`,
+      method:subMethodUp(you,friend)};
   },
   numberops(lv){
     if(lv===1){const a=rand(26,79),b=rand(15,48);
@@ -503,6 +667,7 @@ const TOPICS=[
   {id:'counting',name:'Counting & Patterns',icon:'🔢'},
   {id:'algebra',name:'Multiply & Divide',icon:'✖️'},
   {id:'numberops',name:'Add & Subtract',icon:'➕'},
+  {id:'subtraction',name:'Subtraction (RSM)',icon:'➖'},
   {id:'fractions',name:'Fractions',icon:'🍕'},
   {id:'measurement',name:'Measurement & Time',icon:'📏'},
   {id:'geometry',name:'Shapes & Area',icon:'🔷'},
@@ -512,15 +677,18 @@ const TOPICS=[
 /* ===================== Progress ===================== */
 const KEY='anvikaMathProgress_v3';
 let PROG=load();
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d)return d;}catch(e){}const p={stars:0,streak:0,best:0,topics:{}};TOPICS.forEach(t=>p.topics[t.id]={level:1,qmBest:0,bestScale:0,bestBand:''});return p;}
+function load(){let p=null;try{p=JSON.parse(localStorage.getItem(KEY));}catch(e){}if(!p||typeof p!=='object')p={stars:0,streak:0,best:0,topics:{}};if(!p.topics)p.topics={};TOPICS.forEach(t=>{if(!p.topics[t.id])p.topics[t.id]={level:1,qmBest:0,bestScale:0,bestBand:''};});if(!p.quiz)p.quiz={};return p;}
 function save(){localStorage.setItem(KEY,JSON.stringify(PROG));}
 function refreshStats(){document.getElementById('statStars').textContent=PROG.stars;document.getElementById('statStreak').textContent=PROG.streak;document.getElementById('statBest').textContent=PROG.best;}
 
 /* ===================== Navigation ===================== */
 let current=null;
-const views=['home','modePick','lesson','practice','quick','result'];
+const views=['hub','home','modePick','lesson','practice','quick','result','learnHome','reading','quiz','quizResult','gamesHome','snake','chess','match'];
 function show(v){views.forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==v));}
+function goHub(){stopTimer();show('hub');refreshStats();}
 function goHome(){stopTimer();show('home');buildTopics();refreshStats();}
+function showLearn(){stopTimer();show('learnHome');buildLearnGrid();refreshStats();}
+function showGames(){stopTimer();show('gamesHome');refreshStats();}
 function buildTopics(){const g=document.getElementById('topicGrid');g.innerHTML='';TOPICS.forEach(t=>{const tp=PROG.topics[t.id],band=tp.bestBand?tp.bestBand:'—',el=document.createElement('button');el.className='topic';el.innerHTML=`<div class="ic">${t.icon}</div><div class="tn">${t.name}</div><div class="lv">Best: ${band} · ⚡${tp.qmBest}</div>`;el.onclick=()=>openTopic(t.id);g.appendChild(el);});}
 function openTopic(id){current=id;const t=TOPICS.find(x=>x.id===id);document.getElementById('modeTitle').textContent=t.icon+' '+t.name;document.getElementById('modeSub').textContent='Read the lesson, then practice — or jump into a speed round.';show('modePick');}
 function openLesson(){const L=LESSONS[current];document.getElementById('lessonTitle').textContent=L.title;document.getElementById('lessonBody').innerHTML=L.html;show('lesson');}
@@ -630,8 +798,305 @@ function stopTimer(){if(qTimer){clearInterval(qTimer);qTimer=null;}}
 let toastT=null;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1800);}
 
+/* ===================== Learn & Read + Games ===================== */
+const $=id=>document.getElementById(id);
+
+/* ---- Reading passages (3rd-grade, Meridian-aligned) + quizzes ---- */
+const READINGS={
+  maps:{icon:'🗺️',title:'Reading Maps',cat:'Geography',
+    body:`<p>A <b>map</b> is a flat picture that shows a place from above, like a bird looking down. Maps help us find where things are and how to get from one place to another.</p>
+      <h3>Parts of a map</h3>
+      <ul><li><b>Compass rose</b> — shows the four main directions: North, South, East, and West. (Remember: <i>Never Eat Soggy Waffles</i> going clockwise — N, E, S, W.)</li>
+      <li><b>Map key</b> (or legend) — explains what the little symbols mean, like 🏥 for a hospital or 🌳 for a park.</li>
+      <li><b>Symbols</b> — small pictures or colors that stand for real things. Blue usually means water.</li>
+      <li><b>Scale</b> — tells you how a small distance on the map equals a big distance in real life.</li></ul>
+      <div class="lesson-body"><div class="strat">On most maps, <b>North is up</b>, South is down, East is right, and West is left.</div></div>
+      <p>Maps can show a classroom, a city, a country, or the whole world!</p>`,
+    quiz:[
+      {q:'What does a <b>compass rose</b> show?',choices:['The four directions','How much a place costs','The weather','The time'],answer:'The four directions',explain:'A compass rose shows North, South, East, and West.'},
+      {q:'On most maps, which direction is <b>up</b>?',choices:['North','South','East','West'],answer:'North',explain:'By tradition, North points up on most maps.'},
+      {q:'What part of a map explains the symbols?',choices:['The map key','The title','The border','The scale'],answer:'The map key',explain:'The map key (legend) tells you what each symbol means.'},
+      {q:'Blue on a map usually stands for…',choices:['Water','Mountains','Roads','Forests'],answer:'Water',explain:'Blue almost always means water — rivers, lakes, and oceans.'},
+      {q:'If North is up, then <b>East</b> is on the…',choices:['Right','Left','Top','Bottom'],answer:'Right',explain:'With North up, East is to the right and West is to the left.'}
+    ]},
+  continents:{icon:'🌍',title:'Continents & Oceans',cat:'Geography',
+    body:`<p>Earth has <b>7 continents</b> (huge areas of land) and <b>5 oceans</b> (huge areas of salt water).</p>
+      <h3>The 7 continents</h3>
+      <ul><li>Asia — the biggest, and has the most people</li><li>Africa</li><li>North America — where the USA is</li><li>South America</li><li>Antarctica — the coldest, covered in ice</li><li>Europe</li><li>Australia — the smallest</li></ul>
+      <h3>The 5 oceans</h3>
+      <p>Pacific (the biggest), Atlantic, Indian, Southern, and Arctic.</p>
+      <div class="lesson-body"><div class="strat">Together the oceans cover more than <b>two-thirds</b> of our planet — that's why Earth looks blue from space!</div></div>`,
+    quiz:[
+      {q:'How many continents does Earth have?',choices:['7','5','10','4'],answer:'7',explain:'There are 7 continents.'},
+      {q:'Which is the <b>largest</b> continent?',choices:['Asia','Africa','Europe','Australia'],answer:'Asia',explain:'Asia is the largest continent and has the most people.'},
+      {q:'Which continent is the <b>coldest</b> and covered in ice?',choices:['Antarctica','Africa','Europe','South America'],answer:'Antarctica',explain:'Antarctica, at the South Pole, is covered in ice.'},
+      {q:'Which is the <b>largest ocean</b>?',choices:['Pacific','Atlantic','Indian','Arctic'],answer:'Pacific',explain:'The Pacific Ocean is the biggest.'},
+      {q:'The United States is on which continent?',choices:['North America','South America','Europe','Asia'],answer:'North America',explain:'The USA is in North America.'}
+    ]},
+  soil:{icon:'🪨',title:'How Soil Forms',cat:'Earth Science',
+    body:`<p><b>Soil</b> is the loose top layer of the Earth where plants grow. It takes a very long time — hundreds of years — to form!</p>
+      <h3>How soil is made</h3>
+      <p>Big rocks slowly break into tiny pieces. This breaking is called <b>weathering</b>. Wind, rain, ice, and even plant roots crack rocks apart over time. Those tiny rock bits mix with <b>humus</b> — rotted bits of dead leaves, plants, and animals — to make soil.</p>
+      <h3>Layers of soil</h3>
+      <ul><li><b>Topsoil</b> — the dark top layer, full of humus, where most plants grow.</li><li><b>Subsoil</b> — under the topsoil, with more clay and tiny rocks.</li><li><b>Bedrock</b> — solid rock at the very bottom.</li></ul>
+      <div class="lesson-body"><div class="strat">Healthy soil is full of <b>humus</b>, which gives plants food and holds water.</div></div>`,
+    quiz:[
+      {q:'The slow breaking of rock into tiny pieces is called…',choices:['Weathering','Melting','Freezing','Planting'],answer:'Weathering',explain:'Weathering breaks rock into small pieces over a long time.'},
+      {q:'<b>Humus</b> is made of…',choices:['Rotted plants and animals','Melted ice','Pure sand','Plastic'],answer:'Rotted plants and animals',explain:'Humus is the rotted remains of once-living things.'},
+      {q:'Which layer is dark and best for growing plants?',choices:['Topsoil','Bedrock','Subsoil','Clay'],answer:'Topsoil',explain:'Topsoil is rich in humus, so most plants grow there.'},
+      {q:'What is at the very bottom, under the soil?',choices:['Bedrock','Topsoil','Humus','Water'],answer:'Bedrock',explain:'Solid bedrock sits beneath the soil layers.'},
+      {q:'About how long does soil take to form?',choices:['Hundreds of years','One day','One week','One hour'],answer:'Hundreds of years',explain:'Soil forms very slowly, over hundreds of years.'}
+    ]},
+  resources:{icon:'🌳',title:'Natural Resources',cat:'Earth Science',
+    body:`<p>A <b>natural resource</b> is something from nature that people use. Water, air, soil, trees, sunlight, coal, and oil are all natural resources.</p>
+      <h3>Two kinds of resources</h3>
+      <ul><li><b>Renewable</b> — can be replaced quickly by nature. Examples: sunlight, wind, water, and trees (we can plant more).</li>
+      <li><b>Nonrenewable</b> — once we use them up, they are gone for a very, very long time. Examples: coal, oil, and natural gas.</li></ul>
+      <h3>Taking care of resources</h3>
+      <p>We <b>conserve</b> resources by not wasting them — turning off lights, saving water, and recycling. The 3 R's help: <b>Reduce, Reuse, Recycle</b>.</p>`,
+    quiz:[
+      {q:'Which is a <b>renewable</b> resource?',choices:['Sunlight','Coal','Oil','Natural gas'],answer:'Sunlight',explain:'Sunlight is renewable — it keeps coming every day.'},
+      {q:'Which is a <b>nonrenewable</b> resource?',choices:['Oil','Wind','Water','Trees'],answer:'Oil',explain:'Oil is nonrenewable — once used up it is gone for ages.'},
+      {q:'To <b>conserve</b> means to…',choices:['Not waste','Throw away','Use up fast','Buy more'],answer:'Not waste',explain:'Conserving means using carefully and not wasting.'},
+      {q:'What are the famous 3 R\'s?',choices:['Reduce, Reuse, Recycle','Run, Rest, Repeat','Read, Write, Rest','Rain, River, Rock'],answer:'Reduce, Reuse, Recycle',explain:'Reduce, Reuse, Recycle help protect resources.'},
+      {q:'Which of these is NOT a natural resource?',choices:['A plastic toy','Water','Trees','Soil'],answer:'A plastic toy',explain:'A plastic toy is made by people; water, trees, and soil come from nature.'}
+    ]},
+  matter:{icon:'🧊',title:'States of Matter',cat:'Physical Science',
+    body:`<p>Everything around you is made of <b>matter</b>. Matter takes up space and has weight. There are three main <b>states</b> of matter:</p>
+      <ul><li><b>Solid</b> — keeps its own shape (a rock, a book, an ice cube).</li>
+      <li><b>Liquid</b> — flows and takes the shape of its container (water, milk, juice).</li>
+      <li><b>Gas</b> — spreads out to fill all the space it can (the air, steam).</li></ul>
+      <h3>Changing states</h3>
+      <p>Heat and cold can change matter from one state to another. Ice (solid) <b>melts</b> into water (liquid). Water <b>boils</b> into steam (gas). When steam cools it <b>condenses</b> back into water. When water gets very cold it <b>freezes</b> into ice.</p>`,
+    quiz:[
+      {q:'Which state keeps its own shape?',choices:['Solid','Liquid','Gas','None'],answer:'Solid',explain:'A solid holds its shape, like a rock.'},
+      {q:'Water is an example of a…',choices:['Liquid','Solid','Gas','Rock'],answer:'Liquid',explain:'Water flows and takes the shape of its container — it is a liquid.'},
+      {q:'When ice warms up, it…',choices:['Melts into water','Freezes','Turns to rock','Disappears'],answer:'Melts into water',explain:'Heat melts solid ice into liquid water.'},
+      {q:'A gas will…',choices:['Spread out to fill its space','Keep one shape','Sink to the bottom','Stay in a pile'],answer:'Spread out to fill its space',explain:'Gases spread out to fill all the space they can.'},
+      {q:'Boiling water turns into…',choices:['Steam (gas)','Ice','Soil','Rock'],answer:'Steam (gas)',explain:'Boiling turns liquid water into steam, a gas.'}
+    ]},
+  energy:{icon:'⚡',title:'Forms of Energy',cat:'Physical Science',
+    body:`<p><b>Energy</b> is the power to make things happen — to move, heat, light, or make sound. Energy comes in many forms:</p>
+      <ul><li><b>Light</b> energy — from the Sun, a lamp, or a flame.</li><li><b>Heat</b> (thermal) energy — makes things warm.</li><li><b>Sound</b> energy — what we hear.</li><li><b>Electrical</b> energy — runs your TV and lights.</li><li><b>Motion</b> (kinetic) energy — energy of moving things.</li></ul>
+      <h3>Energy can change form</h3>
+      <p>A lamp changes <b>electrical</b> energy into <b>light</b> and <b>heat</b>. The <b>Sun</b> is Earth's most important source of energy — it gives us light and heat for free!</p>`,
+    quiz:[
+      {q:'What is energy?',choices:['The power to make things happen','A kind of rock','A type of money','A color'],answer:'The power to make things happen',explain:'Energy makes things move, heat up, light up, or make sound.'},
+      {q:'What do we hear?',choices:['Sound energy','Light energy','Soil','Air'],answer:'Sound energy',explain:'Sound energy is what our ears hear.'},
+      {q:'A lamp turns electrical energy into…',choices:['Light and heat','Sound and water','Soil','Ice'],answer:'Light and heat',explain:'A lamp gives off light energy and some heat energy.'},
+      {q:'Earth\'s most important energy source is the…',choices:['Sun','Moon','Wind','Rain'],answer:'Sun',explain:'The Sun gives Earth light and heat energy.'},
+      {q:'Energy of a moving object is called…',choices:['Motion energy','Light energy','Sound energy','Soil energy'],answer:'Motion energy',explain:'Moving things have motion (kinetic) energy.'}
+    ]},
+  forces:{icon:'🧲',title:'Forces & Motion',cat:'Physical Science',
+    body:`<p>A <b>force</b> is a <b>push</b> or a <b>pull</b>. Forces can make things start moving, stop, speed up, slow down, or change direction.</p>
+      <h3>Forces to know</h3>
+      <ul><li><b>Gravity</b> — pulls everything down toward the Earth. It's why a dropped ball falls.</li>
+      <li><b>Friction</b> — a force that slows things down when two surfaces rub. A rough road has more friction than smooth ice.</li>
+      <li><b>Magnetism</b> — magnets pull some metals toward them.</li></ul>
+      <div class="lesson-body"><div class="strat">A bigger push or pull makes a bigger change in motion. Kicking a ball harder makes it go faster and farther.</div></div>`,
+    quiz:[
+      {q:'A force is a…',choices:['Push or a pull','Color','Sound','Shape'],answer:'Push or a pull',explain:'Every force is either a push or a pull.'},
+      {q:'What pulls a dropped ball down to Earth?',choices:['Gravity','Friction','Sound','Light'],answer:'Gravity',explain:'Gravity pulls objects toward the Earth.'},
+      {q:'Which force slows things down when surfaces rub?',choices:['Friction','Gravity','Magnetism','Sound'],answer:'Friction',explain:'Friction slows motion when two surfaces rub together.'},
+      {q:'Where is there the LEAST friction?',choices:['Smooth ice','Rough road','Sandpaper','Grass'],answer:'Smooth ice',explain:'Smooth, slippery ice has very little friction.'},
+      {q:'If you kick a ball harder, it will…',choices:['Go faster','Stop','Shrink','Change color'],answer:'Go faster',explain:'A bigger force makes a bigger change in motion.'}
+    ]},
+  landforms:{icon:'🏔️',title:'Landforms & Changing Earth',cat:'Earth Science',
+    body:`<p><b>Landforms</b> are the natural shapes of the land. Some are tall, some are flat, and some are low.</p>
+      <ul><li><b>Mountain</b> — very tall, rocky land.</li><li><b>Hill</b> — raised land, but smaller than a mountain.</li><li><b>Valley</b> — low land between hills or mountains.</li><li><b>Plain</b> — wide, flat land.</li><li><b>Plateau</b> — flat land that is raised up high.</li></ul>
+      <h3>How Earth changes</h3>
+      <p>Some changes are <b>slow</b>, like a river carving a canyon over millions of years. Some changes are <b>fast</b>, like <b>earthquakes</b>, <b>volcanoes</b>, and <b>landslides</b>, which can change the land in minutes!</p>`,
+    quiz:[
+      {q:'What is a <b>valley</b>?',choices:['Low land between hills','The tallest mountain','Flat raised land','A kind of ocean'],answer:'Low land between hills',explain:'A valley is low land between hills or mountains.'},
+      {q:'Wide, flat land is called a…',choices:['Plain','Mountain','Valley','Hill'],answer:'Plain',explain:'A plain is wide and flat.'},
+      {q:'Which change to Earth is <b>fast</b>?',choices:['An earthquake','A river carving a canyon','Soil forming','A mountain wearing down'],answer:'An earthquake',explain:'Earthquakes change the land very quickly.'},
+      {q:'A flat area raised up high is a…',choices:['Plateau','Valley','Plain','River'],answer:'Plateau',explain:'A plateau is flat land that sits up high.'},
+      {q:'A river slowly carving a canyon is a… change.',choices:['Slow','Fast','Instant','Sudden'],answer:'Slow',explain:'Rivers carve canyons slowly, over a very long time.'}
+    ]},
+  solar:{icon:'🪐',title:'The Solar System',cat:'Space Science',
+    body:`<p>Our <b>solar system</b> is the Sun and everything that travels around it. The <b>Sun</b> is a giant star at the center. Eight <b>planets</b> orbit (go around) the Sun.</p>
+      <h3>The 8 planets (closest to farthest)</h3>
+      <p>Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune.</p>
+      <ul><li><b>Earth</b> is our home — the only planet we know with life.</li><li><b>Jupiter</b> is the biggest planet.</li><li><b>Saturn</b> has beautiful rings.</li><li><b>Mars</b> is called the Red Planet.</li></ul>
+      <div class="lesson-body"><div class="strat">The Sun gives us light and heat, and its gravity holds all the planets in their paths.</div></div>`,
+    quiz:[
+      {q:'What is at the center of the solar system?',choices:['The Sun','The Earth','The Moon','Jupiter'],answer:'The Sun',explain:'The Sun, a star, sits at the center.'},
+      {q:'How many planets orbit the Sun?',choices:['8','9','5','12'],answer:'8',explain:'There are 8 planets.'},
+      {q:'Which planet is our home?',choices:['Earth','Mars','Venus','Saturn'],answer:'Earth',explain:'Earth is our home planet.'},
+      {q:'Which planet is the <b>biggest</b>?',choices:['Jupiter','Earth','Mars','Mercury'],answer:'Jupiter',explain:'Jupiter is the largest planet.'},
+      {q:'Which planet is called the <b>Red Planet</b>?',choices:['Mars','Saturn','Venus','Neptune'],answer:'Mars',explain:'Mars looks red, so it is the Red Planet.'}
+    ]},
+  water:{icon:'💧',title:'The Water Cycle',cat:'Earth Science',
+    body:`<p>The <b>water cycle</b> is how water moves around our planet, over and over, powered by the <b>Sun</b>.</p>
+      <h3>The four steps</h3>
+      <ul><li><b>Evaporation</b> — the Sun heats water in oceans and lakes, turning it into invisible water vapor that rises up.</li>
+      <li><b>Condensation</b> — high in the cool sky, the vapor turns back into tiny water drops that form <b>clouds</b>.</li>
+      <li><b>Precipitation</b> — when clouds get heavy, water falls as rain, snow, sleet, or hail.</li>
+      <li><b>Collection</b> — the water gathers in oceans, lakes, and rivers… and the cycle starts again!</li></ul>`,
+    quiz:[
+      {q:'What powers the water cycle?',choices:['The Sun','The Moon','Wind only','Rocks'],answer:'The Sun',explain:'The Sun\'s heat drives the whole water cycle.'},
+      {q:'Water turning into vapor and rising is…',choices:['Evaporation','Condensation','Precipitation','Collection'],answer:'Evaporation',explain:'Evaporation is liquid water becoming vapor.'},
+      {q:'Clouds form during…',choices:['Condensation','Evaporation','Collection','Freezing'],answer:'Condensation',explain:'Condensation turns vapor into cloud droplets.'},
+      {q:'Rain, snow, and hail are all…',choices:['Precipitation','Evaporation','Clouds','Vapor'],answer:'Precipitation',explain:'Water falling from clouds is precipitation.'},
+      {q:'After it rains, water gathers in oceans and lakes. This is…',choices:['Collection','Evaporation','Condensation','Melting'],answer:'Collection',explain:'Collection is when water gathers again to repeat the cycle.'}
+    ]},
+  ecosystems:{icon:'🦋',title:'Ecosystems & Food Chains',cat:'Life Science',
+    body:`<p>An <b>ecosystem</b> is a place where living things (plants and animals) and non-living things (water, air, soil, sunlight) all live together and depend on each other. A pond, a forest, and a desert are all ecosystems.</p>
+      <h3>Food chains</h3>
+      <p>A <b>food chain</b> shows who eats what — how energy passes from one living thing to the next.</p>
+      <ul><li><b>Producers</b> — plants. They make their own food using sunlight.</li>
+      <li><b>Consumers</b> — animals. They eat plants or other animals.</li>
+      <li><b>Decomposers</b> — like worms and fungi. They break down dead things and return nutrients to the soil.</li></ul>
+      <div class="lesson-body"><div class="strat">Example: Sun → grass (producer) → rabbit (consumer) → fox (consumer).</div></div>`,
+    quiz:[
+      {q:'What is an <b>ecosystem</b>?',choices:['Living and non-living things together','Only animals','Only rocks','A kind of map'],answer:'Living and non-living things together',explain:'An ecosystem includes living and non-living parts that depend on each other.'},
+      {q:'Plants that make their own food are called…',choices:['Producers','Consumers','Decomposers','Predators'],answer:'Producers',explain:'Producers (plants) make food using sunlight.'},
+      {q:'Animals that eat plants or animals are…',choices:['Consumers','Producers','Rocks','Clouds'],answer:'Consumers',explain:'Consumers eat other living things.'},
+      {q:'A worm that breaks down dead leaves is a…',choices:['Decomposer','Producer','Star','Planet'],answer:'Decomposer',explain:'Decomposers break down dead things and enrich the soil.'},
+      {q:'In "grass → rabbit → fox", the grass is the…',choices:['Producer','Consumer','Decomposer','Hunter'],answer:'Producer',explain:'Grass makes its own food, so it is the producer.'}
+    ]},
+  community:{icon:'🏛️',title:'Community & Government',cat:'Social Studies',
+    body:`<p>A <b>community</b> is a group of people who live, work, and play in the same area. People in a community help each other and follow <b>rules and laws</b> to stay safe and fair.</p>
+      <h3>Being a good citizen</h3>
+      <p>A <b>citizen</b> is a member of a community or country. Good citizens follow rules, are kind, help others, and take care of their neighborhood.</p>
+      <h3>Government</h3>
+      <p>A <b>government</b> makes and carries out laws. In the United States, government has <b>three branches</b>: one to <b>make</b> laws (Legislative), one to <b>carry out</b> laws (Executive, led by the President), and one to <b>decide</b> what laws mean (Judicial, the courts).</p>`,
+    quiz:[
+      {q:'A <b>community</b> is…',choices:['People living in the same area','A single house','A kind of animal','A planet'],answer:'People living in the same area',explain:'A community is a group of people in the same area.'},
+      {q:'A good citizen…',choices:['Follows rules and helps others','Breaks rules','Never shares','Litters'],answer:'Follows rules and helps others',explain:'Good citizens are helpful, kind, and follow rules.'},
+      {q:'What does a <b>government</b> do?',choices:['Makes and carries out laws','Grows plants','Paints houses','Drives buses only'],answer:'Makes and carries out laws',explain:'Governments make and carry out laws.'},
+      {q:'Who leads the Executive branch in the USA?',choices:['The President','A teacher','A judge','The mayor of the world'],answer:'The President',explain:'The President leads the Executive branch.'},
+      {q:'How many branches does the U.S. government have?',choices:['3','1','5','10'],answer:'3',explain:'There are three branches: Legislative, Executive, and Judicial.'}
+    ]}
+};
+
+/* ---- GK quizzes (no reading) ---- */
+const GKQUIZZES={
+  gkAnimals:{icon:'🐾',title:'Animal Facts',cat:'GK Quiz',quiz:[
+    {q:'Which animal is the <b>largest</b> on Earth?',choices:['Blue whale','Elephant','Giraffe','Shark'],answer:'Blue whale',explain:'The blue whale is the largest animal ever known.'},
+    {q:'A baby dog is called a…',choices:['Puppy','Kitten','Calf','Cub'],answer:'Puppy',explain:'A baby dog is a puppy.'},
+    {q:'Which animal is known as the "King of the Jungle"?',choices:['Lion','Tiger','Bear','Wolf'],answer:'Lion',explain:'The lion is called the King of the Jungle.'},
+    {q:'How many legs does an insect have?',choices:['6','8','4','10'],answer:'6',explain:'All insects have 6 legs.'},
+    {q:'Which animal can change its color to hide?',choices:['Chameleon','Horse','Cow','Duck'],answer:'Chameleon',explain:'Chameleons change color to blend in.'},
+    {q:'Which of these is a <b>mammal</b>?',choices:['Whale','Shark','Frog','Snake'],answer:'Whale',explain:'A whale is a mammal — it breathes air and feeds milk to its young.'}
+  ]},
+  gkBody:{icon:'🧠',title:'The Human Body',cat:'GK Quiz',quiz:[
+    {q:'Which organ pumps blood around your body?',choices:['Heart','Brain','Lungs','Stomach'],answer:'Heart',explain:'The heart pumps blood all over the body.'},
+    {q:'Which body part helps you <b>breathe</b>?',choices:['Lungs','Liver','Bones','Skin'],answer:'Lungs',explain:'Your lungs take in air so you can breathe.'},
+    {q:'What is the hard frame inside your body called?',choices:['Skeleton','Muscle','Skin','Blood'],answer:'Skeleton',explain:'The skeleton (your bones) holds you up.'},
+    {q:'Which organ helps you think?',choices:['Brain','Heart','Stomach','Foot'],answer:'Brain',explain:'The brain controls thinking and the whole body.'},
+    {q:'How many senses do humans have?',choices:['5','3','7','2'],answer:'5',explain:'Sight, hearing, smell, taste, and touch — 5 senses.'},
+    {q:'Which part helps you <b>digest</b> food?',choices:['Stomach','Lungs','Ears','Eyes'],answer:'Stomach',explain:'The stomach helps break down the food you eat.'}
+  ]},
+  gkMixed:{icon:'🌟',title:'Fun General Knowledge',cat:'GK Quiz',quiz:[
+    {q:'How many days are in a week?',choices:['7','5','10','12'],answer:'7',explain:'There are 7 days in a week.'},
+    {q:'How many colors are in a rainbow?',choices:['7','5','3','10'],answer:'7',explain:'A rainbow has 7 colors (ROYGBIV).'},
+    {q:'What do bees make?',choices:['Honey','Milk','Bread','Silk'],answer:'Honey',explain:'Bees make honey.'},
+    {q:'Which season comes after winter?',choices:['Spring','Summer','Fall','Monsoon'],answer:'Spring',explain:'Spring comes right after winter.'},
+    {q:'How many months are in a year?',choices:['12','10','7','24'],answer:'12',explain:'There are 12 months in a year.'},
+    {q:'What shape has 3 sides?',choices:['Triangle','Square','Circle','Pentagon'],answer:'Triangle',explain:'A triangle has 3 sides.'},
+    {q:'Which is the fastest land animal?',choices:['Cheetah','Lion','Horse','Dog'],answer:'Cheetah',explain:'The cheetah is the fastest land animal.'}
+  ]}
+};
+const LEARN_ORDER=['maps','continents','soil','resources','matter','energy','forces','landforms','solar','water','ecosystems','community','gkAnimals','gkBody','gkMixed'];
+function buildLearnGrid(){const g=$('learnGrid');g.innerHTML='';LEARN_ORDER.forEach(id=>{const it=READINGS[id]||GKQUIZZES[id];const el=document.createElement('button');el.className='topic';el.innerHTML=`<div class="ic">${it.icon}</div><div class="tn">${it.title}</div><div class="lv">${it.cat}</div>`;el.onclick=()=>openLearn(id);g.appendChild(el);});}
+let curLearn=null;
+function openLearn(id){if(READINGS[id]){const r=READINGS[id];curLearn=id;$('readTitle').textContent=r.icon+' '+r.title;$('readBody').innerHTML=r.body;show('reading');}else{const q=GKQUIZZES[id];runQuiz(q.quiz,q.icon+' '+q.title,'learnHome');}}
+function startReadingQuiz(){const r=READINGS[curLearn];runQuiz(r.quiz,r.icon+' '+r.title+' — Quiz','reading');}
+
+/* ---- Generic quiz engine ---- */
+let QZ={list:[],i:0,score:0,title:'',back:'learnHome',answered:false};
+function runQuiz(questions,title,backView){QZ={list:shuffle(questions.slice()),i:0,score:0,title,back:backView,answered:false};$('qzBackBtn').onclick=()=>show(backView);show('quiz');qzRender();}
+function qzRender(){QZ.answered=false;$('qzFb').classList.remove('show');const q=QZ.list[QZ.i];$('qzProg').textContent=(QZ.i+1)+' / '+QZ.list.length;$('qzScore').textContent='⭐ '+QZ.score;$('qzQ').innerHTML=q.q;$('qzVisual').innerHTML=q.visual||'';const box=$('qzChoices');box.innerHTML='';shuffle(q.choices.slice()).forEach(c=>{const b=document.createElement('button');b.className='choice';b.innerHTML=c;b.onclick=()=>qzAnswer(b,c,q);box.appendChild(b);});}
+function qzAnswer(btn,val,q){if(QZ.answered)return;QZ.answered=true;document.querySelectorAll('#qzChoices .choice').forEach(b=>{b.disabled=true;if(b.innerHTML===q.answer)b.classList.add('correct');});const fb=$('qzFb');fb.classList.remove('neutral');if(val===q.answer){QZ.score++;PROG.stars++;save();refreshStats();$('qzFT').textContent='✅ Correct! +1 star';}else{btn.classList.add('wrong');fb.classList.add('neutral');$('qzFT').textContent='Not quite 🤔';}$('qzScore').textContent='⭐ '+QZ.score;$('qzEx').innerHTML=q.explain||'';fb.classList.add('show');}
+function qzNext(){QZ.i++;if(QZ.i>=QZ.list.length){qzFinish();return;}qzRender();}
+function qzFinish(){const n=QZ.list.length;$('qrTitle').textContent=QZ.title;$('qrNum').textContent=QZ.score+' / '+n;const pct=QZ.score/n;$('qrMsg').textContent=pct>=0.9?'Outstanding! 🌟':pct>=0.7?'Great job! 👏':pct>=0.5?'Good effort — try again to beat it! 🌱':'Read it again and give it another go! 💛';$('qrAgain').onclick=()=>{QZ.list=shuffle(QZ.list);QZ.i=0;QZ.score=0;show('quiz');qzRender();};$('qrBack').onclick=()=>show(QZ.back);show('quizResult');}
+
+/* ---- Countries data ---- */
+const COUNTRIES=[
+  {n:'United States',cap:'Washington, D.C.',flag:'🇺🇸'},{n:'United Kingdom',cap:'London',flag:'🇬🇧'},
+  {n:'France',cap:'Paris',flag:'🇫🇷'},{n:'India',cap:'New Delhi',flag:'🇮🇳'},
+  {n:'Japan',cap:'Tokyo',flag:'🇯🇵'},{n:'China',cap:'Beijing',flag:'🇨🇳'},
+  {n:'Germany',cap:'Berlin',flag:'🇩🇪'},{n:'Italy',cap:'Rome',flag:'🇮🇹'},
+  {n:'Brazil',cap:'Brasília',flag:'🇧🇷'},{n:'Canada',cap:'Ottawa',flag:'🇨🇦'},
+  {n:'Australia',cap:'Canberra',flag:'🇦🇺'},{n:'Russia',cap:'Moscow',flag:'🇷🇺'},
+  {n:'Spain',cap:'Madrid',flag:'🇪🇸'},{n:'Mexico',cap:'Mexico City',flag:'🇲🇽'},
+  {n:'Egypt',cap:'Cairo',flag:'🇪🇬'},{n:'South Africa',cap:'Pretoria',flag:'🇿🇦'},
+  {n:'South Korea',cap:'Seoul',flag:'🇰🇷'},{n:'Argentina',cap:'Buenos Aires',flag:'🇦🇷'},
+  {n:'Greece',cap:'Athens',flag:'🇬🇷'},{n:'Portugal',cap:'Lisbon',flag:'🇵🇹'},
+  {n:'Netherlands',cap:'Amsterdam',flag:'🇳🇱'},{n:'Sweden',cap:'Stockholm',flag:'🇸🇪'},
+  {n:'Norway',cap:'Oslo',flag:'🇳🇴'},{n:'Switzerland',cap:'Bern',flag:'🇨🇭'},
+  {n:'Kenya',cap:'Nairobi',flag:'🇰🇪'},{n:'Nigeria',cap:'Abuja',flag:'🇳🇬'},
+  {n:'Thailand',cap:'Bangkok',flag:'🇹🇭'},{n:'Turkey',cap:'Ankara',flag:'🇹🇷'},
+  {n:'Saudi Arabia',cap:'Riyadh',flag:'🇸🇦'},{n:'Indonesia',cap:'Jakarta',flag:'🇮🇩'}
+];
+function startCapitalQuiz(){const cs=shuffle(COUNTRIES).slice(0,8);const qs=cs.map(c=>{const wrong=shuffle(COUNTRIES.filter(x=>x.cap!==c.cap)).slice(0,3).map(x=>x.cap);return{q:`What is the capital of <b>${c.n}</b>? ${c.flag}`,choices:shuffle([c.cap,...wrong]),answer:c.cap,explain:`The capital of ${c.n} is <b>${c.cap}</b>.`};});runQuiz(qs,'🏙️ Capital Quiz','gamesHome');}
+function startFlagQuiz(){const cs=shuffle(COUNTRIES).slice(0,8);const qs=cs.map(c=>{const wrong=shuffle(COUNTRIES.filter(x=>x.n!==c.n)).slice(0,3).map(x=>x.n);return{q:'Which country has this flag?',visual:`<div class="flag-big">${c.flag}</div>`,choices:shuffle([c.n,...wrong]),answer:c.n,explain:`That's the flag of <b>${c.n}</b> — capital ${c.cap}.`};});runQuiz(qs,'🚩 Flag Quiz','gamesHome');}
+
+/* ---- Capital Match ---- */
+let matchLeft=[],matchRight=[],matchSel=null,matchDone=0;
+function startCapitalMatch(){const chosen=shuffle(COUNTRIES).slice(0,5);matchLeft=chosen;matchRight=shuffle(chosen.slice());matchSel=null;matchDone=0;$('matchMsg').textContent='Tap a country, then its capital';show('match');renderMatch();}
+function renderMatch(){const l=matchLeft.map((c,i)=>`<div class="mitem" data-side="L" data-i="${i}">${c.flag} ${c.n}</div>`).join('');const r=matchRight.map((c,i)=>`<div class="mitem" data-side="R" data-i="${i}">${c.cap}</div>`).join('');$('matchArea').innerHTML=`<div class="match-wrap"><div class="match-col">${l}</div><div class="match-col">${r}</div></div><div class="mode-row" style="justify-content:center;margin-top:12px"><button class="btn btn-lite" onclick="startCapitalMatch()">↻ New set</button></div>`;$('matchArea').querySelectorAll('.mitem').forEach(el=>el.onclick=()=>matchTap(el));}
+function matchTap(el){if(el.classList.contains('done'))return;const side=el.dataset.side,i=+el.dataset.i;
+  if(side==='L'){$('matchArea').querySelectorAll('[data-side=L]').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');matchSel=i;return;}
+  if(matchSel==null){$('matchMsg').textContent='Pick a country first 👈';return;}
+  if(matchLeft[matchSel].n===matchRight[i].n){const L=$('matchArea').querySelector(`[data-side=L][data-i="${matchSel}"]`);L.classList.remove('sel');L.classList.add('done');el.classList.add('done');matchSel=null;matchDone++;PROG.stars++;save();refreshStats();$('matchMsg').textContent=matchDone>=matchLeft.length?'🎉 All matched! Great job!':'✅ Match! Keep going';}
+  else{el.classList.add('bad');setTimeout(()=>el.classList.remove('bad'),400);$('matchMsg').textContent='Not a match — try again 🤔';}
+}
+
+/* ---- Snakes & Ladders (1-100, randomized, vs robot) ---- */
+const DICE=['⚀','⚁','⚂','⚃','⚄','⚅'];
+const SL_MAX=100,SL_C=10,SL_R=10;
+let SL_L={},SL_S={},slP,slC,slBusy,slDone;
+function slRow(n){return Math.floor((n-1)/SL_C);}
+function slGen(){SL_L={};SL_S={};const used=new Set([1,SL_MAX]);let m=0,t=0;while(m<9&&t<600){t++;const s=rand(2,88);if(used.has(s))continue;const e=s+rand(8,30);if(e>=SL_MAX||used.has(e)||slRow(e)<=slRow(s))continue;SL_L[s]=e;used.add(s);used.add(e);m++;}m=0;t=0;while(m<9&&t<600){t++;const s=rand(12,99);if(used.has(s))continue;const e=s-rand(8,30);if(e<2||used.has(e)||slRow(e)>=slRow(s))continue;SL_S[s]=e;used.add(s);used.add(e);m++;}}
+function startSnake(){slGen();slP=0;slC=0;slBusy=false;slDone=false;show('snake');$('slMsg').textContent='You 🔴 vs Robot 🔵';renderSnake();}
+function slApply(p){return SL_L[p]||SL_S[p]||p;}
+function slMove(who){const d=rand(1,6);let pos=who==='p'?slP:slC;let np=pos+d,after;let note=`${who==='p'?'You':'Robot'} 🎲${DICE[d-1]}`;if(np>SL_MAX){after=pos;note+=` too high — stay ${pos}`;}else{after=slApply(np);note+=` → ${np}`;if(after>np)note+=' 🪜up!';else if(after<np)note+=' 🐍down!';}if(who==='p')slP=after;else slC=after;$('slMsg').textContent=note;if(after===SL_MAX){slDone=true;$('slMsg').textContent=who==='p'?'🎉 You WIN! +5⭐':'🤖 Robot wins — try again!';if(who==='p'){PROG.stars+=5;save();refreshStats();}}renderSnake();}
+function rollSnake(){if(slBusy||slDone)return;slBusy=true;slMove('p');if(slDone){slBusy=false;return;}setTimeout(()=>{if(!slDone)slMove('c');slBusy=false;},800);}
+function renderSnake(){const R=SL_R,C=SL_C,cells=[];for(let dr=0;dr<R;dr++){const rfb=R-1-dr,base=rfb*C,nums=[];for(let c=0;c<C;c++)nums.push(base+c+1);if(rfb%2===1)nums.reverse();cells.push(...nums);}const W=Math.min(380,window.innerWidth-70);let h=`<div class="board-grid" style="grid-template-columns:repeat(${C},1fr);width:${W}px;">`;cells.forEach(n=>{let mark=SL_L[n]?'🪜':SL_S[n]?'🐍':(n===SL_MAX?'🏁':'');let tk='';if(slP===n)tk+='🔴';if(slC===n)tk+='🔵';const bg=n===SL_MAX?'#fbf3e2':SL_L[n]?'#e6f4ec':SL_S[n]?'#fbeceb':'#ffffff';h+=`<div class="sl-cell" style="background:${bg}"><span class="n">${n}</span>${mark}<span class="tk">${tk}</span></div>`;});h+=`</div><div style="text-align:center;color:var(--muted);font-size:13px;margin-top:6px">🪜 ${Object.keys(SL_L).length} ladders · 🐍 ${Object.keys(SL_S).length} snakes</div><div class="mode-row" style="justify-content:center;margin-top:10px"><button class="btn btn-primary roll-btn" onclick="rollSnake()">🎲 Roll</button><button class="btn btn-lite" onclick="startSnake()">↻ New Board</button></div>`;$('slArea').innerHTML=h;}
+
+/* ---- Chess (vs minimax computer) ---- */
+const N_OFF=[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+const K_OFF=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const B_DIR=[[-1,-1],[-1,1],[1,-1],[1,1]],R_DIR=[[-1,0],[1,0],[0,-1],[0,1]];
+const VAL={p:100,n:320,b:330,r:500,q:900,k:20000};
+const GLYPH={w:{p:'♙',n:'♘',b:'♗',r:'♖',q:'♕',k:'♔'},b:{p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚'}};
+function initBoard(){const b=new Array(64).fill(null);const back=['r','n','b','q','k','b','n','r'];for(let c=0;c<8;c++){b[c]={t:back[c],c:'b'};b[8+c]={t:'p',c:'b'};b[48+c]={t:'p',c:'w'};b[56+c]={t:back[c],c:'w'};}return b;}
+function genPieceMoves(b,i){const p=b[i];if(!p)return[];const r=Math.floor(i/8),c=i%8,res=[],col=p.c;
+  const add=(rr,cc)=>{if(rr<0||rr>7||cc<0||cc>7)return false;const j=rr*8+cc,q=b[j];if(!q){res.push(j);return true;}if(q.c!==col)res.push(j);return false;};
+  if(p.t==='p'){const dir=col==='w'?-1:1,start=col==='w'?6:1;if(r+dir>=0&&r+dir<8&&!b[(r+dir)*8+c]){res.push((r+dir)*8+c);if(r===start&&!b[(r+2*dir)*8+c])res.push((r+2*dir)*8+c);}for(const dc of[-1,1]){const rr=r+dir,cc=c+dc;if(rr>=0&&rr<8&&cc>=0&&cc<8){const j=rr*8+cc;if(b[j]&&b[j].c!==col)res.push(j);}}}
+  else if(p.t==='n'){for(const o of N_OFF)add(r+o[0],c+o[1]);}
+  else if(p.t==='k'){for(const o of K_OFF)add(r+o[0],c+o[1]);}
+  else{const dirs=p.t==='b'?B_DIR:p.t==='r'?R_DIR:B_DIR.concat(R_DIR);for(const o of dirs){let rr=r+o[0],cc=c+o[1];while(add(rr,cc)){rr+=o[0];cc+=o[1];}}}
+  return res;}
+function doMove(b,from,to){const nb=b.slice();const p=nb[from];nb[to]=p;nb[from]=null;if(p&&p.t==='p'){const tr=Math.floor(to/8);if((p.c==='w'&&tr===0)||(p.c==='b'&&tr===7))nb[to]={t:'q',c:p.c};}return nb;}
+function kingIdx(b,col){for(let i=0;i<64;i++)if(b[i]&&b[i].t==='k'&&b[i].c===col)return i;return -1;}
+function squareAttacked(b,i,byCol){for(let j=0;j<64;j++){if(b[j]&&b[j].c===byCol&&genPieceMoves(b,j).includes(i))return true;}return false;}
+function inCheck(b,col){const k=kingIdx(b,col);return k<0?false:squareAttacked(b,k,col==='w'?'b':'w');}
+function legalMoves(b,col){const res=[];for(let i=0;i<64;i++){if(b[i]&&b[i].c===col){for(const j of genPieceMoves(b,i)){if(!inCheck(doMove(b,i,j),col))res.push({from:i,to:j});}}}return res;}
+function evalBoard(b){let s=0;for(let i=0;i<64;i++){const p=b[i];if(p)s+=(p.c==='b'?1:-1)*VAL[p.t];}return s;}
+function search(b,depth,alpha,beta,col){if(depth===0)return evalBoard(b);const moves=legalMoves(b,col);if(moves.length===0)return inCheck(b,col)?(col==='b'?-99999-depth:99999+depth):0;moves.sort((m1,m2)=>(b[m2.to]?VAL[b[m2.to].t]:0)-(b[m1.to]?VAL[b[m1.to].t]:0));
+  if(col==='b'){let best=-Infinity;for(const m of moves){const v=search(doMove(b,m.from,m.to),depth-1,alpha,beta,'w');if(v>best)best=v;if(best>alpha)alpha=best;if(alpha>=beta)break;}return best;}
+  else{let best=Infinity;for(const m of moves){const v=search(doMove(b,m.from,m.to),depth-1,alpha,beta,'b');if(v<best)best=v;if(best<beta)beta=best;if(alpha>=beta)break;}return best;}}
+function aiMove(b,depth){const moves=legalMoves(b,'b');if(!moves.length)return null;moves.sort((m1,m2)=>(b[m2.to]?VAL[b[m2.to].t]:0)-(b[m1.to]?VAL[b[m1.to].t]:0));let best=-Infinity,bm=moves[0];for(const m of moves){const v=search(doMove(b,m.from,m.to),depth-1,-Infinity,Infinity,'w');if(v>best){best=v;bm=m;}}return bm;}
+let cb=null,cbSel=null,cbMoves=[],cbTurn='w',cbOver=false;
+function startChess(){cb=initBoard();cbSel=null;cbMoves=[];cbTurn='w';cbOver=false;$('chessMsg').textContent='Your move (White)';show('chess');renderChess();}
+function renderChess(){let h='<div class="chess-board">';for(let i=0;i<64;i++){const r=Math.floor(i/8),c=i%8,dark=(r+c)%2===1,p=cb[i];let cls='csq '+(dark?'darksq':'lightsq');if(cbSel===i)cls+=' sel';if(cbSel!=null&&cbMoves.includes(i))cls+=' mv';if(p&&p.t==='k'&&inCheck(cb,p.c))cls+=' chk';h+=`<div class="${cls}" data-i="${i}">${p?GLYPH[p.c][p.t]:''}</div>`;}h+='</div>';$('chessBoard').innerHTML=h;$('chessBoard').querySelectorAll('.csq').forEach(el=>el.onclick=()=>chessClick(+el.dataset.i));}
+function chessClick(i){if(cbOver||cbTurn!=='w')return;const p=cb[i];
+  if(cbSel==null){if(p&&p.c==='w'){cbSel=i;cbMoves=legalMoves(cb,'w').filter(m=>m.from===i).map(m=>m.to);renderChess();}return;}
+  if(i===cbSel){cbSel=null;cbMoves=[];renderChess();return;}
+  if(cbMoves.includes(i)){cb=doMove(cb,cbSel,i);cbSel=null;cbMoves=[];cbTurn='b';renderChess();chessAfter('w');return;}
+  if(p&&p.c==='w'){cbSel=i;cbMoves=legalMoves(cb,'w').filter(m=>m.from===i).map(m=>m.to);renderChess();}
+}
+function chessAfter(justMoved){const toMove=justMoved==='w'?'b':'w';const lm=legalMoves(cb,toMove);
+  if(lm.length===0){cbOver=true;renderChess();const checked=inCheck(cb,toMove);if(!checked){$('chessMsg').textContent='Stalemate — it\'s a draw 🤝';}else if(toMove==='w'){$('chessMsg').textContent='Checkmate — Robot wins ♟️ (try again!)';}else{$('chessMsg').textContent='Checkmate — You WIN! 🏆 +8⭐';PROG.stars+=8;save();refreshStats();}return;}
+  if(toMove==='b'){$('chessMsg').textContent='🤖 Robot thinking…';setTimeout(()=>{const depth=+($('chessLevel').value||3);const m=aiMove(cb,depth);if(m){cb=doMove(cb,m.from,m.to);}cbTurn='w';renderChess();chessAfter('b');},60);}
+  else{$('chessMsg').textContent=inCheck(cb,'w')?'⚠️ Check! Your move':'Your move (White)';}
+}
+
 /* ===================== Init ===================== */
-buildTopics();refreshStats();show('home');
+buildTopics();refreshStats();show('hub');
 </script>
 </body>
 </html>
